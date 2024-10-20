@@ -16,7 +16,7 @@ class StupidNeuralNetwork:
         if self.weights is None:
             self.weights = np.random.random(size=(input_size, output_size))
         if self.b is None:
-            self.b = -np.random.random(size=(output_size, ))
+            self.b = -np.random.random(size=(output_size, 1))
 
     def train(self, dataset: np.ndarray, target: np.ndarray):
         self.dataset = dataset
@@ -24,15 +24,18 @@ class StupidNeuralNetwork:
         self._init_weights(self.dataset.shape[-1], target.shape[-1])
 
         accuracy_list = []
+        batch_size = len(target)
         for epoch in range(self.epochs):
             print(f"Epoch: {epoch + 1}/{self.epochs}")
-            for row, target_value in zip(self.dataset, target):
+            for row, target_value in zip(np.split(self.dataset, self.dataset.shape[0] // batch_size),
+                                         np.split(target, target.shape[0] // batch_size)):
                 result = row @ self.weights + self.b
                 result = (result > 0).astype(np.int8)
 
                 loss = target_value - result
-                self.weights += self.lr * (row.reshape((-1, 1)) @ loss.reshape((1, -1)))
-                self.b += self.lr * loss
+                print(row.shape, loss.shape)
+                self.weights += self.lr * (row.T @ loss)
+                self.b += self.lr * loss.mean(axis=0)
             epoch_result = self.dataset @ self.weights + self.b
             epoch_result = (epoch_result > 0).astype(np.int8)
             accuracy = (epoch_result == target).mean() * 100

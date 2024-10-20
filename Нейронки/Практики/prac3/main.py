@@ -5,60 +5,99 @@ from sklearn.model_selection import train_test_split
 
 
 class StupidLayer:
-    def __init__(self, size: tuple[int], lr: float = 0.01, epochs: int = 100, activate: str = 'relu'):
+    def __init__(self, size: tuple[int], lr: float = 0.5, epochs: int = 100, activate: str = 'relu'):
         input_size = size[0]
         output_size = size[1]
         self.weights = np.random.random(size=(input_size, output_size))
         self.b = np.random.random(size=(output_size, ))
         self.lr = lr
         self.epochs = epochs
-        self.activate = activate
+
+        activate_func = {'relu': lambda x: np.maximum(np.zeros_like(x), x),
+                         'sigmoid': lambda x: 1 / (1 + np.exp(-x))}
+        derivative = {'relu': lambda x: (x > 0).astype(np.int8),
+                      'sigmoid': lambda x: x * (1 - x)}
+        self.activate = activate_func[activate]
+        self.deriv = derivative[activate]
+        self.input: np.ndarray
+        self.output: np.ndarray
 
     def forward(self, data: np.ndarray):
-        
+        self.input = data.copy()
+        self.output = self.input @ self.weights + self.b
+        self.output = self.activate(self.output)
+        return self.output
+
+    def back_prop(self, next_loss: np.ndarray) -> np.ndarray:
+        print(self.output.shape, next_loss.shape)
+        self.delta = self.deriv(self.output).T @ next_loss
+        return self.delta
+  
+    def calculate_weights(self):
+        self.weights += self.lr * (self.input.T @ self.delta)
+        self.b += self.lr * self.delta.mean(axis=0)
 
 
 class StupidNeuralNetwork:
 
     def __init__(self):
-        self.weights: np.ndarray = None
-        self.b: np.ndarray = None
-        self.lr = 0.01
+        self.layers: list[StupidLayer] | None = None
         self.epochs = 100
 
-    def _init_weights(self, input_size: int, output_size: int):
-        if self.weights is None:
-            self.weights = np.random.random(size=(input_size, output_size))
-        if self.b is None:
-            self.b = -np.random.random(size=(output_size, ))
+    def create_layers(self, input_size: int, output_size: int):
+        self.layers = [StupidLayer((input_size, 4), activate='sigmoid'),
+                       StupidLayer((4, output_size), activate='sigmoid')]
+        
+    def forward(self, row: np.ndarray):
+        for layer in self.layers:
+            row = layer.forward(row)
+        return row
+    
+    def backward(self, target: np.ndarray, result: np.ndarray):
+        loss = 1 / 2 * ((target - result) ** 2).sum()
+        loss_deriv = (result - target)
+        for layer in self.layers[::-1]:
+            next_delta = layer.back_prop(loss_deriv)
+            print(next_delta.shape)
+            loss_deriv = layer.weights * next_delta
+            print(loss_deriv.shape)
+
+        for layer in self.layers:
+            layer.calculate_weights()
+        
+        return loss
 
     def train(self, dataset: np.ndarray, target: np.ndarray):
         self.dataset = dataset
 
-        self._init_weights(self.dataset.shape[-1], target.shape[-1])
+        self.create_layers(self.dataset.shape[-1], target.shape[-1])
 
         accuracy_list = []
+        epoch_list = []
+        batch_size = len(target)
         for epoch in range(self.epochs):
             print(f"Epoch: {epoch + 1}/{self.epochs}")
-            for row, target_value in zip(self.dataset, target):
-                result = row @ self.weights + self.b
-                result = (result > 0).astype(np.int8)
-
-                loss = target_value - result
-                self.weights += self.lr * (row.reshape((-1, 1)) @ loss.reshape((1, -1)))
-                self.b += self.lr * loss
-            epoch_result = self.dataset @ self.weights + self.b
-            epoch_result = (epoch_result > 0).astype(np.int8)
+            epoch_loss = []
+            for row, target_value in zip(np.split(self.dataset, self.dataset.shape[0] // batch_size),
+                                         np.split(target, target.shape[0] // batch_size)):
+                result = self.forward(row.copy())
+                loss = self.backward(target_value, result)
+                epoch_loss.append(loss)
+            epoch_loss = np.array(epoch_loss).sum()
+            print(f'Loss: {epoch_loss}')
+            epoch_list.append(epoch_loss)
+            epoch_result = self.forward(self.dataset)
+            epoch_result = (epoch_result >= 0.5).astype(np.int8)
             accuracy = (epoch_result == target).mean() * 100
             accuracy_list.append(accuracy)
 
         plt.plot(range(1, self.epochs + 1), accuracy_list)
+        plt.plot(range(1, self.epochs + 1), epoch_list)
         plt.show()
 
     def test(self, data: np.ndarray, target: np.array):
-        result = data @ self.weights + self.b
-        result = (result > 0).astype(np.int8)
-        print(result.reshape(1))
+        result = self.forward(data)
+        result = (result >= 0.5).astype(np.int8)
         accuracy = (result == target).mean() * 100
         return accuracy
 
@@ -84,7 +123,7 @@ class Dataset:
             self._mean = self.df.mean()
 
         self.df = (self.df - self._min) / (self._max - self._min)
-        self.df = (self.df > 0.5).astype(np.int8)
+        # self.df = (self.df > 0.5).astype(np.int8)
         # self.df = (self.df - self._mean) / self._std
         # self.df = (self.df > 0).astype(np.int8)
 
