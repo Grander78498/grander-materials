@@ -7,7 +7,7 @@ import random
 class Path:
     weights: np.ndarray | None = None
     graph: np.ndarray | None = None
-    max_weight = 20
+    max_weight = 10
 
     def __init__(self,
                  path: list[int] | None = None,
@@ -98,6 +98,16 @@ class Path:
                 result_str += ' -> '
         return result_str
 
+    def print_length(self):
+        cum_length = []
+        for i in range(1, len(self.path)):
+            edge_len = Path.graph[self.path[i]][self.path[i - 1]]
+            if not cum_length:
+                cum_length.append(edge_len)
+            else:
+                cum_length.append(edge_len)
+        return " + ".join(map(lambda x: str(round(x, 2)), cum_length))
+
 
 class Solution:
 
@@ -117,19 +127,21 @@ class Solution:
         for i in range(len(df)):
             for j in range(len(df)):
                 graph[i][j] = np.sqrt((x[i] - x[j])**2 + (y[i] - y[j])**2)
+                if i < j:
+                    print(round(graph[i][j], 2))
 
         self.current_path = Path(weights=weights, graph=graph)
         self.current_path.create_new_path()
 
     def solve(self):
-        temperature = 100
+        temperature = 10
         history = []
         self.best_path = self.current_path
         history.append(self.best_path.length)
         print('Initial path: ' + self.best_path.print_verbose())
-        print(f'Initial length: {self.best_path.length:.2f} m')
+        print(f'Initial length: {self.best_path.print_length()} = {self.best_path.length:.2f} m')
         print('============\n')
-        while temperature > 0.01:
+        while temperature > 0.001:
             print(f'Temperature: {temperature}')
             print('=============')
             self.current_path = Path(self.best_path.path)
@@ -137,7 +149,7 @@ class Solution:
             print('Best path: ' + self.best_path.print_verbose())
             print(f'Best length: {self.best_path.length:.2f} m')
             print('Current path: ' + self.current_path.print_verbose())
-            print(f'Current length: {self.current_path.length:.2f} m')
+            print(f'Current length: {self.current_path.print_length()} = {self.current_path.length:.2f} м')
             if self.current_path.length < self.best_path.length:
                 self.best_path = self.current_path
             else:

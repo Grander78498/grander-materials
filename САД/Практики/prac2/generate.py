@@ -14,7 +14,7 @@ def generate(min_coord: int, max_coord: int, min_weight: int, max_weight: int,
 
 
 def main():
-    min_coord, max_coord, min_weight, max_weight, n = -1000, 1000, 0.01, 5, 100
+    min_coord, max_coord, min_weight, max_weight, n = -200, 200, 0.01, 5, 6
     x, y, weight = generate(min_coord, max_coord, min_weight, max_weight, n)
     df = pd.DataFrame({'x': x, 'y': y, 'weight': weight})
     df.to_csv('data.csv', index=False)
