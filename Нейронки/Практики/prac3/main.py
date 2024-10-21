@@ -3,17 +3,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
-
 class StupidLayer:
-    def __init__(self, size: tuple[int], lr: float = 0.5, epochs: int = 100, activate: str = 'relu'):
+    def __init__(self, size: tuple[int], lr: float = 0.01, activate: str = 'relu'):
         input_size = size[0]
         output_size = size[1]
-        self.weights = np.random.random(size=(input_size, output_size))
-        self.b = np.random.random(size=(output_size, ))
+        self.weights = np.random.random(size=(input_size, output_size)) - 0.5
+        self.b = np.random.random(size=(output_size, )) - 0.5
         self.lr = lr
-        self.epochs = epochs
 
-        activate_func = {'relu': lambda x: np.maximum(np.zeros_like(x), x),
+        activate_func = {'relu': lambda x: np.maximum(0, x),
                          'sigmoid': lambda x: 1 / (1 + np.exp(-x))}
         derivative = {'relu': lambda x: (x > 0).astype(np.int8),
                       'sigmoid': lambda x: x * (1 - x)}
@@ -29,76 +27,82 @@ class StupidLayer:
         return self.output
 
     def back_prop(self, next_loss: np.ndarray) -> np.ndarray:
-        print(self.output.shape, next_loss.shape)
-        self.delta = self.deriv(self.output).T @ next_loss
-        return self.delta
-  
+        self.delta = self.deriv(self.output) * next_loss
+        return self.delta @ self.weights.T
+
     def calculate_weights(self):
-        self.weights += self.lr * (self.input.T @ self.delta)
-        self.b += self.lr * self.delta.mean(axis=0)
+        self.weights -= self.lr * self.input.T @ self.delta
+        self.b -= self.lr * self.delta.sum(axis=0)
 
 
 class StupidNeuralNetwork:
 
-    def __init__(self):
-        self.layers: list[StupidLayer] | None = None
-        self.epochs = 100
+    def __init__(self, epochs=100, batch_size: int | None = None):
+        self.layers = []
+        self.epochs = epochs
+        self.batch_size = batch_size
 
     def create_layers(self, input_size: int, output_size: int):
-        self.layers = [StupidLayer((input_size, 4), activate='sigmoid'),
-                       StupidLayer((4, output_size), activate='sigmoid')]
-        
+        self.layers = [StupidLayer((input_size, 6), activate='relu'),
+                       StupidLayer((6, 3), activate='relu'),
+                       StupidLayer((3, output_size), activate='sigmoid')]
+
     def forward(self, row: np.ndarray):
         for layer in self.layers:
             row = layer.forward(row)
         return row
-    
+
     def backward(self, target: np.ndarray, result: np.ndarray):
-        loss = 1 / 2 * ((target - result) ** 2).sum()
         loss_deriv = (result - target)
-        for layer in self.layers[::-1]:
-            next_delta = layer.back_prop(loss_deriv)
-            print(next_delta.shape)
-            loss_deriv = layer.weights * next_delta
-            print(loss_deriv.shape)
+        for layer in reversed(self.layers):
+            loss_deriv = layer.back_prop(loss_deriv)
 
         for layer in self.layers:
             layer.calculate_weights()
-        
-        return loss
 
     def train(self, dataset: np.ndarray, target: np.ndarray):
-        self.dataset = dataset
-
-        self.create_layers(self.dataset.shape[-1], target.shape[-1])
+        self.create_layers(dataset.shape[1], target.shape[1])
 
         accuracy_list = []
-        epoch_list = []
-        batch_size = len(target)
+        epoch_loss_list = []
+        self.batch_size = len(dataset) if self.batch_size is None else self.batch_size
+
         for epoch in range(self.epochs):
             print(f"Epoch: {epoch + 1}/{self.epochs}")
             epoch_loss = []
-            for row, target_value in zip(np.split(self.dataset, self.dataset.shape[0] // batch_size),
-                                         np.split(target, target.shape[0] // batch_size)):
-                result = self.forward(row.copy())
-                loss = self.backward(target_value, result)
+            for i in range(0, len(dataset), self.batch_size):
+                X_batch = dataset[i:i + self.batch_size]
+                y_batch = target[i:i + self.batch_size]
+
+                result = self.forward(X_batch)
+                loss = 0.5 * ((y_batch - result) ** 2).mean()
                 epoch_loss.append(loss)
-            epoch_loss = np.array(epoch_loss).sum()
-            print(f'Loss: {epoch_loss}')
-            epoch_list.append(epoch_loss)
-            epoch_result = self.forward(self.dataset)
-            epoch_result = (epoch_result >= 0.5).astype(np.int8)
-            accuracy = (epoch_result == target).mean() * 100
+
+                self.backward(y_batch, result)
+
+            avg_loss = np.mean(epoch_loss)
+            print(f'Loss: {avg_loss}')
+            epoch_loss_list.append(avg_loss)
+
+            predictions = self.forward(dataset)
+            predictions = (predictions >= 0.5).astype(np.int8)
+            accuracy = (predictions == target).mean() * 100
+            print(f'Accuracy: {accuracy}%')
             accuracy_list.append(accuracy)
 
         plt.plot(range(1, self.epochs + 1), accuracy_list)
-        plt.plot(range(1, self.epochs + 1), epoch_list)
+        plt.title('Accuracy over epochs')
         plt.show()
 
-    def test(self, data: np.ndarray, target: np.array):
+        plt.plot(range(1, self.epochs + 1), epoch_loss_list)
+        plt.title('Loss over epochs')
+        plt.show()
+
+    def test(self, data: np.ndarray, target: np.ndarray):
         result = self.forward(data)
         result = (result >= 0.5).astype(np.int8)
         accuracy = (result == target).mean() * 100
+        print(f'Test Accuracy: {accuracy}%')
         return accuracy
 
 
@@ -144,10 +148,9 @@ def main():
     dataset.normalize_data(df)
     dataset.prepare_dataset()
 
-    nn = StupidNeuralNetwork()
+    nn = StupidNeuralNetwork(epochs=100, batch_size=1)
     nn.train(dataset.train_data, dataset.train_target)
-    accuracy = nn.test(dataset.test_data, dataset.test_target)
-    print(f'Accuracy: {accuracy}%')
+    nn.test(dataset.test_data, dataset.test_target)
 
 
 if __name__ == '__main__':
