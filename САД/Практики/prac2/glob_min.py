@@ -36,24 +36,24 @@ class Solution:
         history = []
         history.append(self.rastrigin(self.best_solution))
         print(
-            f'Initial solution: ({", ".join(map(str, self.current_solution))})'
+            f'Исходное решение: ({", ".join(map(str, self.current_solution))})'
         )
         print(
-            f'Initial function value: {self.rastrigin(self.current_solution)}')
+            f'Исходное значение функции: {self.rastrigin(self.current_solution)}')
         print('============\n')
-        for k in range(2, 301):
-            print(f'Temperature: {t0}')
+        for k in range(2, 10001):
+            print(f'Температура: {t0}')
             print('=============')
             self.current_solution = self.generate_solution(temperature)
             current_rastrigin, best_rastrigin = self.rastrigin(
                 self.current_solution), self.rastrigin(self.best_solution)
             print(
-                f'Best solution: ({", ".join(map(str, self.best_solution))})')
-            print(f'Best function value: {best_rastrigin}')
+                f'Лучшее решение: ({", ".join(map(str, self.best_solution))})')
+            print(f'Лучшее значение функции: {best_rastrigin}')
             print(
-                f'Current solution: ({", ".join(map(str, self.current_solution))})'
+                f'Текущее решение: ({", ".join(map(str, self.current_solution))})'
             )
-            print(f'Current function value: {current_rastrigin}')
+            print(f'Текущее значение функции: {current_rastrigin}')
             if current_rastrigin < best_rastrigin:
                 self.best_solution = self.current_solution
             else:
@@ -67,8 +67,8 @@ class Solution:
             history.append(self.rastrigin(self.best_solution))
 
         best_rastrigin = self.rastrigin(self.best_solution)
-        print(f'Best solution: ({", ".join(map(str, self.best_solution))})')
-        print(f'Best function value: {best_rastrigin}')
+        print(f'Лучшее решение: ({", ".join(map(str, self.best_solution))})')
+        print(f'Лучшее значение функции: {best_rastrigin}')
         plt.plot(history)
         plt.show()
 
