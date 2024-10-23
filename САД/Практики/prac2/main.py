@@ -7,7 +7,7 @@ import random
 class Path:
     weights: np.ndarray | None = None
     graph: np.ndarray | None = None
-    max_weight = 10
+    max_weight = 6
 
     def __init__(self,
                  path: list[int] | None = None,
@@ -75,7 +75,7 @@ class Path:
     @property
     def length(self) -> float:
         length = 0
-        for i in range(len(self.path)):
+        for i in range(1, len(self.path)):
             length += Path.graph[self.path[i]][self.path[i - 1]]
         return length
 
@@ -134,14 +134,14 @@ class Solution:
         self.current_path.create_new_path()
 
     def solve(self):
-        temperature = 10
+        temperature = 100
         history = []
         self.best_path = self.current_path
         history.append(self.best_path.length)
         print('Initial path: ' + self.best_path.print_verbose())
         print(f'Initial length: {self.best_path.print_length()} = {self.best_path.length:.2f} m')
         print('============\n')
-        while temperature > 0.001:
+        while temperature > 0.0000001:
             print(f'Temperature: {temperature}')
             print('=============')
             self.current_path = Path(self.best_path.path)
@@ -153,9 +153,9 @@ class Solution:
             if self.current_path.length < self.best_path.length:
                 self.best_path = self.current_path
             else:
-                prob_lim = np.exp(-(self.current_path.length / 1000 -
-                                    self.best_path.length / 1000) /
-                                  temperature)
+                prob_lim = np.exp(-(self.current_path.length -
+                                    self.best_path.length) /
+                                  (1000 * temperature))
                 probability = np.random.random()
                 print(f'H = {prob_lim}; p = {probability}')
                 if probability < prob_lim:
