@@ -1,0 +1,35 @@
+<data>
+    <item>
+        <motion>588</motion>
+        <sound_level>57.4</sound_level>
+        <illuminance>552.19</illuminance>
+        <temperature>24.5</temperature>
+        <file_time>Fri Oct 25 13:57:46 2024</file_time>
+        <case_id>15</case_id>
+    </item>
+    <item>
+        <motion>528</motion>
+        <sound_level>61.08</sound_level>
+        <illuminance>550.24</illuminance>
+        <temperature>24.4</temperature>
+        <file_time>Fri Oct 25 13:57:51 2024</file_time>
+        <case_id>15</case_id>
+    </item>
+    <item>
+        <motion>334</motion>
+        <sound_level>69.36</sound_level>
+        <illuminance>127.07</illuminance>
+        <temperature>24.5</temperature>
+        <file_time>Fri Oct 25 13:57:56 2024</file_time>
+        <case_id>15</case_id>
+    </item>
+    <item>
+        <motion>292</motion>
+        <sound_level>65.94</sound_level>
+        <illuminance>541.65</illuminance>
+        <temperature>24.5</temperature>
+        <file_time>Fri Oct 25 13:58:01 2024</file_time>
+        <case_id>15</case_id>
+    </item>
+    <item>
+        <motion>511</motion><sound_level>74.25</sound_level><illuminance>547.12</illuminance><temperature>24.5</temperature><file_time>Fri Oct 25 13:58:06 2024</file_time><case_id>15</case_id></item><item><motion>391</motion><sound_level>65.19</sound_level><illuminance>545.56</illuminance><temperature>24.5</temperature><file_time>Fri Oct 25 13:58:11 2024</file_time><case_id>15</case_id></item><item><motion>510</motion><sound_level>73.07</sound_level><illuminance>548.29</illuminance><temperature>24.5</temperature><file_time>Fri Oct 25 13:58:16 2024</file_time><case_id>15</case_id></item><item><motion>292</motion><sound_level>69.6</sound_level><illuminance>549.85</illuminance><temperature>24.5</temperature><file_time>Fri Oct 25 13:58:21 2024</file_time><case_id>15</case_id></item><item><motion>490</motion><sound_level>65.54</sound_level><illuminance>546.34</illuminance><temperature>24.5</temperature><file_time>Fri Oct 25 13:58:26 2024</file_time><case_id>15</case_id></item><item><motion>225</motion><sound_level>61.89</sound_level><illuminance>545.56</illuminance><temperature>24.5</temperature><file_time>Fri Oct 25 13:58:31 2024</file_time><case_id>15</case_id></item><item><motion>401</motion><sound_level>58.75</sound_level><illuminance>548.68</illuminance><temperature>24.5</temperature><file_time>Fri Oct 25 13:58:36 2024</file_time><case_id>15</case_id></item><item><motion>659</motion><sound_level>67.55</sound_level><illuminance>4.15</illuminance><temperature>24.5</temperature><file_time>Fri Oct 25 13:58:41 2024</file_time><case_id>15</case_id></item></data>

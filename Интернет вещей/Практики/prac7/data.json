@@ -1,0 +1,98 @@
+[
+    {
+        "motion": "588",
+        "sound_level": "57.4",
+        "illuminance": "552.19",
+        "temperature": "24.5",
+        "file_time": "Fri Oct 25 13:57:46 2024",
+        "case_id": "15"
+    },
+    {
+        "motion": "528",
+        "sound_level": "61.08",
+        "illuminance": "550.24",
+        "temperature": "24.4",
+        "file_time": "Fri Oct 25 13:57:51 2024",
+        "case_id": "15"
+    },
+    {
+        "motion": "334",
+        "sound_level": "69.36",
+        "illuminance": "127.07",
+        "temperature": "24.5",
+        "file_time": "Fri Oct 25 13:57:56 2024",
+        "case_id": "15"
+    },
+    {
+        "motion": "292",
+        "sound_level": "65.94",
+        "illuminance": "541.65",
+        "temperature": "24.5",
+        "file_time": "Fri Oct 25 13:58:01 2024",
+        "case_id": "15"
+    },
+    {
+        "motion": "511",
+        "sound_level": "74.25",
+        "illuminance": "547.12",
+        "temperature": "24.5",
+        "file_time": "Fri Oct 25 13:58:06 2024",
+        "case_id": "15"
+    },
+    {
+        "motion": "391",
+        "sound_level": "65.19",
+        "illuminance": "545.56",
+        "temperature": "24.5",
+        "file_time": "Fri Oct 25 13:58:11 2024",
+        "case_id": "15"
+    },
+    {
+        "motion": "510",
+        "sound_level": "73.07",
+        "illuminance": "548.29",
+        "temperature": "24.5",
+        "file_time": "Fri Oct 25 13:58:16 2024",
+        "case_id": "15"
+    },
+    {
+        "motion": "292",
+        "sound_level": "69.6",
+        "illuminance": "549.85",
+        "temperature": "24.5",
+        "file_time": "Fri Oct 25 13:58:21 2024",
+        "case_id": "15"
+    },
+    {
+        "motion": "490",
+        "sound_level": "65.54",
+        "illuminance": "546.34",
+        "temperature": "24.5",
+        "file_time": "Fri Oct 25 13:58:26 2024",
+        "case_id": "15"
+    },
+    {
+        "motion": "225",
+        "sound_level": "61.89",
+        "illuminance": "545.56",
+        "temperature": "24.5",
+        "file_time": "Fri Oct 25 13:58:31 2024",
+        "case_id": "15"
+    },
+    {
+        "motion": "401",
+        "sound_level": "58.75",
+        "illuminance": "548.68",
+        "temperature": "24.5",
+        "file_time": "Fri Oct 25 13:58:36 2024",
+        "case_id": "15"
+    },
+    {
+        "motion": "659",
+        "sound_level": "67.55",
+        "illuminance": "4.15",
+        "temperature": "24.5",
+        "file_time": "Fri Oct 25 13:58:41 2024",
+        "case_id": "15"
+    }
+]
