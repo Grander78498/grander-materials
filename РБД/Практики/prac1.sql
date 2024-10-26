@@ -13,6 +13,12 @@ CREATE TABLE music_group (
     country VARCHAR (100) NOT NULL,
     creation_date DATE
 );
+CREATE TABLE performer (
+    id BIGSERIAL PRIMARY KEY,
+    musician_id BIGINT REFERENCES musician(id) ON DELETE CASCADE,
+    group_id BIGINT REFERENCES music_group(id) ON DELETE CASCADE,
+    UNIQUE (musician_id, group_id)
+);
 CREATE TABLE group_musician (
     group_id BIGINT REFERENCES music_group(id) ON DELETE CASCADE NOT NULL,
     musician_id BIGINT REFERENCES musician(id) ON DELETE CASCADE NOT NULL,
@@ -31,13 +37,14 @@ CREATE TABLE release_type (
 CREATE TABLE album (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR (100) NOT NULL,
+    duration INTERVAL NOT NULL,
     release_date DATE NOT NULL,
     release_type_id SMALLINT REFERENCES release_type(id) ON DELETE RESTRICT NOT NULL
 );
-CREATE TABLE album_group (
+CREATE TABLE album_performer (
     album_id BIGINT REFERENCES album (id) ON DELETE CASCADE NOT NULL,
-    group_id BIGINT REFERENCES music_group (id) ON DELETE CASCADE NOT NULL,
-    PRIMARY KEY (album_id, group_id)
+    performer_id BIGINT REFERENCES performer (id) ON DELETE CASCADE NOT NULL,
+    PRIMARY KEY (album_id, performer_id)
 );
 CREATE TABLE producer_album (
     producer_id BIGINT REFERENCES producer (id) ON DELETE CASCADE NOT NULL,
@@ -50,10 +57,10 @@ CREATE TABLE song (
     duration INTERVAL NOT NULL,
     album_id BIGINT REFERENCES album (id) ON DELETE SET NULL
 );
-CREATE TABLE song_group (
+CREATE TABLE song_performer (
     song_id BIGINT REFERENCES song (id) ON DELETE CASCADE NOT NULL,
-    group_id BIGINT REFERENCES music_group (id) ON DELETE CASCADE NOT NULL,
-    PRIMARY KEY (song_id, group_id)
+    performer_id BIGINT REFERENCES performer (id) ON DELETE CASCADE NOT NULL,
+    PRIMARY KEY (song_id, performer_id)
 );
 CREATE TABLE single (
     id BIGSERIAL PRIMARY KEY,
@@ -72,75 +79,75 @@ CREATE TABLE producer_song (
 );
 
 
-INSERT INTO music_group (name, country) VALUES 
-    ('Queens Of The Stone Age', 'USA'),
-    ('Kyuss', 'USA'),
-    ('Pink Floyd', 'Great Britain'),
-    ('Radiohead', 'Great Britain'),
-    ('Kanye West', 'USA'),
-    ('JAY-Z', 'USA'),
-    ('Frank Ocean', 'USA'),
-    ('The-Dream', 'USA'),
-    ('Pusha T', 'USA'),
-    ('Kid Cudi', 'USA'),
-    ('Raekwon', 'USA'),
-    ('Kids See Ghosts', 'USA');
+INSERT INTO music_group (name, country, creation_date) VALUES 
+    ('Queens Of The Stone Age', 'USA', '1996-01-01'),
+    ('Kyuss', 'USA', '1987-01-01'),
+    ('Pink Floyd', 'Great Britain', '1965-01-01'),
+    ('Radiohead', 'Great Britain', '1985-01-01'),
+    ('Kids See Ghosts', 'USA', '2018-01-01');
 
-INSERT INTO musician (name, country) VALUES
-    ('Josh Homme', 'USA'),
-    ('Dave Grohl', 'USA'),
-    ('Nick Oliveri', 'USA'),
-    ('Mark Lanegan', 'USA'),
-    ('Brant Bjork', 'USA'),
-    ('John Garcia', 'USA'),
-    ('David Gilmour', 'Great Britain'),
-    ('Roger Waters', 'Great Britain'),
-    ('Thom Yorke', 'Great Britain'),
-    ('Colin Greenwood', 'Great Britain'),
-    ('Kanye West', 'USA'),
-    ('JAY-Z', 'USA'),
-    ('Frank Ocean', 'USA'),
-    ('The-Dream', 'USA'),
-    ('Pusha T', 'USA'),
-    ('Kid Cudi', 'USA'),
-    ('Raekwon', 'USA');
+INSERT INTO musician (name, country, birth_date) VALUES
+    ('Josh Homme', 'USA', '1973-05-17'),
+    ('Dave Grohl', 'USA', '1969-01-14'),
+    ('Nick Oliveri', 'USA', '1971-10-21'),
+    ('Mark Lanegan', 'USA', '1964-11-25'),
+    ('Brant Bjork', 'USA', '1973-03-19'),
+    ('John Garcia', 'USA', '1970-09-04'),
+    ('David Gilmour', 'Great Britain', '1946-03-06'),
+    ('Roger Waters', 'Great Britain', '1943-09-06'),
+    ('Thom Yorke', 'Great Britain', '1968-10-07'),
+    ('Colin Greenwood', 'Great Britain', '1969-06-26'),
+    ('Kanye West', 'USA', '1977-06-08'),
+    ('JAY-Z', 'USA', '1969-12-04'),
+    ('Frank Ocean', 'USA', '1987-10-28'),
+    ('The-Dream', 'USA', '1977-09-20'),
+    ('Pusha T', 'USA', '1977-05-13'),
+    ('Kid Cudi', 'USA', '1984-01-30'),
+    ('Raekwon', 'USA', '1970-01-12');
+
+INSERT INTO performer (musician_id, group_id) VALUES
+    (NULL, 1),
+    (NULL, 2),
+    (NULL, 3),
+    (NULL, 4),
+    (NULL, 5),
+    (11, NULL),
+    (12, NULL),
+    (13, NULL),
+    (14, NULL),
+    (15, NULL),
+    (16, NULL),
+    (17, NULL);
 
 INSERT INTO group_musician (group_id, musician_id) VALUES
     (1, 1), (1, 2), (1, 3), (1, 4),
     (2, 1), (2, 3), (2, 5), (2, 6),
     (3, 7), (3, 8),
     (4, 9), (4, 10),
-    (5, 11),
-    (6, 12),
-    (7, 13),
-    (8, 14),
-    (9, 15),
-    (10, 16),
-    (11, 17),
-    (12, 11), (12, 16);
+    (5, 11), (5, 16);
 
 INSERT INTO release_type (type) VALUES ('LP'), ('EP'), ('Live'), ('Compilation');
 
 
-INSERT INTO album (name, release_date, release_type_id) VALUES
-    ('...Like Clockwork', '2013-06-03', 1),
-    ('Songs For The Deaf', '2002-08-27', 1),
-    ('Welcome To Sky Valley', '1994-06-28', 1),
-    ('Wish You Were Here', '1975-09-12', 1),
-    ('OK Computer', '1997-05-21', 1),
-    ('Watch The Throne', '2011-08-08', 1),
-    ('Kids See Ghosts', '2018-06-08', 2),
-    ('My Beautiful Dark Twisted Fantasy', '2010-11-22', 1),
-    ('PULSE', '1995-05-28', 3);
+INSERT INTO album (name, duration, release_date, release_type_id) VALUES
+    ('...Like Clockwork', '00:07:50', '2013-06-03', 1),
+    ('Songs For The Deaf', '00:10:30', '2002-08-27', 1),
+    ('Welcome To Sky Valley', '00:13:56', '1994-06-28', 1),
+    ('Wish You Were Here', '00:44:20', '1975-09-12', 1),
+    ('OK Computer', '00:11:22', '1997-05-21', 1),
+    ('Watch The Throne', '00:08:11', '2011-08-08', 1),
+    ('Kids See Ghosts', '00:05:50', '2018-06-08', 2),
+    ('My Beautiful Dark Twisted Fantasy', '00:19:56', '2010-11-22', 1),
+    ('PULSE', '00:06:35', '1995-05-28', 3);
 
-INSERT INTO album_group (album_id, group_id) VALUES
+INSERT INTO album_performer (album_id, performer_id) VALUES
     (1, 1), (2, 1),
     (3, 2),
     (4, 3),
     (5, 4),
-    (6, 5), (6, 6),
-    (7, 5), (7, 10), (7, 12),
-    (8, 5),
+    (6, 6), (6, 7),
+    (7, 5), (7, 6), (7, 11),
+    (8, 6),
     (9, 3);
 
 INSERT INTO producer (name, country) VALUES
@@ -167,35 +174,35 @@ INSERT INTO producer_album (producer_id, album_id) VALUES
     (6, 9);
 
 INSERT INTO song (name, duration, album_id) VALUES
-    ('I Sat By The Ocean', 'PT3M55S', 1),
-    ('My God Is The Sun', 'PT3M55S', 1),
-    ('No One Knows', 'PT4M38S', 2),
-    ('A Song For The Dead', 'PT5M52S', 2),
-    ('Gardenia', 'PT6M54S', 3),
-    ('Space Cadet', 'PT7M2S', 3),
-    ('Shine on You Crazy Diamond (Parts I-V)', 'PT13M30S', 4),
-    ('Welcome To The Machine', 'PT7M31S', 4),
-    ('Have A Cigar', 'PT5M8S', 4),
-    ('Wish You Were Here', 'PT5M40S', 4),
-    ('Shine on You Crazy Diamond (Parts VI-IX)', 'PT12M31S', 4),
-    ('Paranoid Android', 'PT6M23S', 5),
-    ('Let Down', 'PT4M59S', 5),
-    ('Pearly', 'PT3M33S', null),
-    ('No Church In The Wild', 'PT4M32S', 6),
-    ('N****s In Paris', 'PT3M39S', 6),
-    ('Gorgeous', 'PT5M57S', 8),
-    ('POWER', 'PT4M52S', 8),
-    ('Runaway', 'PT9M7S', 8),
-    ('Feel The Love', 'PT2M33S', 7),
-    ('Cudi Montage', 'PT3M17S', 7),
-    ('Wish You Were Here - Live', 'PT6M35S', 9);
+    ('I Sat By The Ocean', '00:03:55', 1),
+    ('My God Is The Sun', '00:03:55', 1),
+    ('No One Knows', '00:04:38', 2),
+    ('A Song For The Dead', '00:05:52', 2),
+    ('Gardenia', '00:06:54', 3),
+    ('Space Cadet', '00:07:02', 3),
+    ('Shine on You Crazy Diamond (Parts I-V)', '00:13:30', 4),
+    ('Welcome To The Machine', '00:07:31', 4),
+    ('Have A Cigar', '00:05:08', 4),
+    ('Wish You Were Here', '00:05:40', 4),
+    ('Shine on You Crazy Diamond (Parts VI-IX)', '00:12:31', 4),
+    ('Paranoid Android', '00:06:23', 5),
+    ('Let Down', '00:04:59', 5),
+    ('Pearly', '00:03:33', NULL),
+    ('No Church In The Wild', '00:04:32', 6),
+    ('N****s In Paris', '00:03:39', 6),
+    ('Gorgeous', '00:05:57', 8),
+    ('POWER', '00:04:52', 8),
+    ('Runaway', '00:09:07', 8),
+    ('Feel The Love', '00:02:33', 7),
+    ('Cudi Montage', '00:03:17', 7),
+    ('Wish You Were Here - Live', '00:06:35', 9);
 
-INSERT INTO song_group (song_id, group_id) VALUES 
+INSERT INTO song_performer (song_id, performer_id) VALUES 
     (14, 4),
-    (15, 7), (15, 8),
-    (17, 10), (17, 11),
-    (19, 9),
-    (20, 9);
+    (15, 8), (15, 9),
+    (17, 11), (17, 12),
+    (19, 10),
+    (20, 10);
 
 INSERT INTO producer_song (producer_id, song_id) VALUES (7, 14);
 
