@@ -37,7 +37,6 @@ CREATE TABLE release_type (
 CREATE TABLE album (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR (100) NOT NULL,
-    duration INTERVAL NOT NULL,
     release_date DATE NOT NULL,
     release_type_id SMALLINT REFERENCES release_type(id) ON DELETE RESTRICT NOT NULL
 );
@@ -129,16 +128,16 @@ INSERT INTO group_musician (group_id, musician_id) VALUES
 INSERT INTO release_type (type) VALUES ('LP'), ('EP'), ('Live'), ('Compilation');
 
 
-INSERT INTO album (name, duration, release_date, release_type_id) VALUES
-    ('...Like Clockwork', '00:07:50', '2013-06-03', 1),
-    ('Songs For The Deaf', '00:10:30', '2002-08-27', 1),
-    ('Welcome To Sky Valley', '00:13:56', '1994-06-28', 1),
-    ('Wish You Were Here', '00:44:20', '1975-09-12', 1),
-    ('OK Computer', '00:11:22', '1997-05-21', 1),
-    ('Watch The Throne', '00:08:11', '2011-08-08', 1),
-    ('Kids See Ghosts', '00:05:50', '2018-06-08', 2),
-    ('My Beautiful Dark Twisted Fantasy', '00:19:56', '2010-11-22', 1),
-    ('PULSE', '00:06:35', '1995-05-28', 3);
+INSERT INTO album (name, release_date, release_type_id) VALUES
+    ('...Like Clockwork', '2013-06-03', 1),
+    ('Songs For The Deaf', '2002-08-27', 1),
+    ('Welcome To Sky Valley', '1994-06-28', 1),
+    ('Wish You Were Here', '1975-09-12', 1),
+    ('OK Computer', '1997-05-21', 1),
+    ('Watch The Throne', '2011-08-08', 1),
+    ('Kids See Ghosts', '2018-06-08', 2),
+    ('My Beautiful Dark Twisted Fantasy', '2010-11-22', 1),
+    ('PULSE', '1995-05-28', 3);
 
 INSERT INTO album_performer (album_id, performer_id) VALUES
     (1, 1), (2, 1),

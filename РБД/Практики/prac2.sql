@@ -15,5 +15,5 @@ SELECT * FROM album WHERE name NOT LIKE '%The%';
 SELECT * FROM song ORDER BY duration;
 SELECT * FROM album ORDER BY name DESC;
 
-ALTER TABLE music_group ADD COLUMN info TEXT;
+ALTER TABLE album ADD COLUMN duration INTERVAL;
 UPDATE musician SET country = 'Great Britain' WHERE name LIKE 'Josh%';
