@@ -149,17 +149,17 @@ INSERT INTO album_performer (album_id, performer_id) VALUES
     (8, 6),
     (9, 3);
 
-INSERT INTO producer (name, country) VALUES
-    ('Josh Homme', 'USA'),
-    ('Eric Valentine', 'USA'),
-    ('Adam Casper', 'USA'),
-    ('Chris Goss', 'USA'),
-    ('Roger Waters', 'Great Britain'),
-    ('David Gilmour', 'Great Britain'),
-    ('Nigel Goldrich', 'Great Britain'),
-    ('Kanye West', 'USA'),
-    ('Kid Cudi', 'USA'),
-    ('Mike Dean', 'USA');
+INSERT INTO producer (name, country, birth_date) VALUES
+    ('Josh Homme', 'USA', '1973-05-17'),
+    ('Eric Valentine', 'USA', '1968-03-07'),
+    ('Adam Kasper', 'USA', '1962-12-01'),
+    ('Chris Goss', 'USA', '1959-08-17'),
+    ('Roger Waters', 'Great Britain', '1943-09-06'),
+    ('David Gilmour', 'Great Britain', '1946-03-06'),
+    ('Nigel Godrich', 'Great Britain', '1971-02-28'),
+    ('Kanye West', 'USA', '1977-06-08'),
+    ('Kid Cudi', 'USA', '1984-01-30'),
+    ('Mike Dean', 'USA', '1965-03-01');
 
 INSERT INTO producer_album (producer_id, album_id) VALUES
     (1, 1),

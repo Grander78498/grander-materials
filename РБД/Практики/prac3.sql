@@ -47,7 +47,7 @@ FROM song AS s
 JOIN song_performer AS sp ON sp.song_id = s.id
 JOIN performer AS p ON p.id = sp.performer_id
 LEFT OUTER JOIN musician AS m ON m.id = p.musician_id
-LEFT OUTER JOIN music_group AS g ON g.id = p1.group_id
+LEFT OUTER JOIN music_group AS g ON g.id = p.group_id
 ORDER BY s.id, g.id, m.id;
 
 
