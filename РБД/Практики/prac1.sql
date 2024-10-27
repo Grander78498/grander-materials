@@ -105,18 +105,9 @@ INSERT INTO musician (name, country, birth_date) VALUES
     ('Raekwon', 'USA', '1970-01-12');
 
 INSERT INTO performer (musician_id, group_id) VALUES
-    (NULL, 1),
-    (NULL, 2),
-    (NULL, 3),
-    (NULL, 4),
-    (NULL, 5),
-    (11, NULL),
-    (12, NULL),
-    (13, NULL),
-    (14, NULL),
-    (15, NULL),
-    (16, NULL),
-    (17, NULL);
+    (NULL, 1), (NULL, 2), (NULL, 3), (NULL, 4), (NULL, 5),
+    (11, NULL), (12, NULL), (13, NULL), (14, NULL),
+    (15, NULL), (16, NULL), (17, NULL);
 
 INSERT INTO group_musician (group_id, musician_id) VALUES
     (1, 1), (1, 2), (1, 3), (1, 4),
