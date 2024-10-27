@@ -47,7 +47,6 @@ FROM song AS s
 JOIN song_performer AS sp ON sp.song_id = s.id
 JOIN performer AS p ON p.id = sp.performer_id
 LEFT OUTER JOIN musician AS m ON m.id = p.musician_id
-RIGHT OUTER JOIN performer AS p1 ON p1.id = p.id
 LEFT OUTER JOIN music_group AS g ON g.id = p1.group_id
 ORDER BY s.id, g.id, m.id;
 
@@ -61,15 +60,13 @@ FROM song AS s
 JOIN song_performer AS sp ON sp.song_id = s.id
 JOIN performer AS p ON p.id = sp.performer_id
 LEFT OUTER JOIN musician AS m ON m.id = p.musician_id
-RIGHT OUTER JOIN performer AS p1 ON p1.id = p.id
-LEFT OUTER JOIN music_group AS g ON g.id = p1.group_id
+LEFT OUTER JOIN music_group AS g ON g.id = p.group_id
 WHERE m.name LIKE 'Kanye%' AND NOT EXISTS (
     SELECT * FROM song AS s1
     JOIN song_performer AS sp ON sp.song_id = s.id
     JOIN performer AS p ON p.id = sp.performer_id
     LEFT OUTER JOIN musician AS m ON m.id = p.musician_id
-    RIGHT OUTER JOIN performer AS p1 ON p1.id = p.id
-    LEFT OUTER JOIN music_group AS g ON g.id = p1.group_id
+    LEFT OUTER JOIN music_group AS g ON g.id = p.group_id
     WHERE s1.id = s.id AND m.name LIKE 'Kid%'
 )
 ORDER BY s.id, g.id, m.id;
@@ -91,22 +88,24 @@ JOIN song AS s ON s.album_id = a.id
 GROUP BY a.id ORDER BY album_duration DESC;
 
 
--- #9 Ужасающий пример операции деления - вывести продюсера(-ов),
--- который(-е) продюссировал(-и) все альбомы Queens Of The Stone Age
-SELECT pr.name, a.name FROM producer AS pr
-JOIN producer_album AS pra ON pra.producer_id = pr.id
-JOIN album AS a ON a.id = pra.album_id
+-- #9 Чуть менее ужасаюащий пример операции деления (по сравнению с предыдущей вариацией) 
+-- вывести продюсера(-ов), который(-е) продюссировал(-и) все альбомы Queens Of The Stone Age
+
+-- Представление, в котором сведения только о тех альбомах, которые исполнены QOTSA
+WITH qotsa_albums
+AS
+(SELECT a.* FROM album AS a
 JOIN album_performer AS ap ON ap.album_id = a.id
 JOIN performer AS p ON p.id = ap.performer_id
 JOIN music_group AS g ON g.id = p.group_id
-WHERE g.name LIKE 'Queen%'
+WHERE g.name LIKE 'Queen%')
+-- Сам запрос
+SELECT pr.name, a.name FROM producer AS pr
+JOIN producer_album AS pra ON pra.producer_id = pr.id
+JOIN qotsa_albums AS a ON a.id = pra.album_id
 AND NOT EXISTS (
-    SELECT pr1.name, a1.name FROM producer AS pr1, album AS a1
-    JOIN album_performer AS ap1 ON ap1.album_id = a1.id
-    JOIN performer AS p1 ON p1.id = ap1.performer_id
-    JOIN music_group AS g1 ON g1.id = p1.group_id
-    WHERE g1.name LIKE 'Queen%'
-    AND NOT EXISTS (
+    SELECT pr1.name, a1.name FROM producer AS pr1, qotsa_albums AS a1
+    WHERE NOT EXISTS (
         SELECT 1 FROM producer AS pr2
         JOIN producer_album AS pra1 ON pra1.producer_id = pr2.id
         JOIN album AS a2 ON a2.id = pra1.album_id
@@ -129,7 +128,7 @@ SELECT name FROM Kyuss_musicians WHERE name LIKE 'Jo%';
 
 -- Процедуры, функции и триггеры
 -- #1 Процедура добавления песни к исполнителю
-CREATE PROCEDURE add_song_to_performer (song_id INTEGER, album_id INTEGER)
+CREATE PROCEDURE add_song_to_performer (song_id INTEGER)
 AS $$
 DECLARE performer_id INTEGER;
 DECLARE performer_cursor CURSOR FOR
@@ -146,6 +145,22 @@ BEGIN
         VALUES ($1, performer_id);
     END LOOP;
     CLOSE performer_cursor;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE PROCEDURE add_all_songs_to_performers ()
+AS $$
+DECLARE song_id INTEGER;
+DECLARE song_cursor CURSOR FOR SELECT id FROM song;
+BEGIN
+    OPEN song_cursor;
+    LOOP
+        FETCH song_cursor INTO song_id;
+        IF NOT FOUND THEN EXIT; END IF;
+        CALL add_song_to_performer (song_id);
+    END LOOP;
+    CLOSE song_cursor;
 END;
 $$ LANGUAGE plpgsql;
 
