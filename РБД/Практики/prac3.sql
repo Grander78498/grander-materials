@@ -20,10 +20,8 @@ SELECT s.id, s.name, s.duration, a.name FROM song AS s
 
 -- #4 Операция объединения - вывод музыкантов, состоящих в группе QOTSA или Kyuss
 SELECT m.name AS musician_name, g.name AS group_name FROM musician AS m
-    INNER JOIN (
-        SELECT g1.name, gm.musician_id FROM music_group AS g1
-        INNER JOIN group_musician AS gm ON gm.group_id = g1.id
-    ) AS g ON g.musician_id = m.id
+    INNER JOIN group_musician AS gm ON gm.musician_id = m.id
+    INNER JOIN music_group AS g ON gm.group_id = g.id
     WHERE g.name LIKE 'Queen%' OR g.name = 'Kyuss';
 
 
@@ -37,18 +35,6 @@ SELECT m.name AS musician_name
         INNER JOIN music_group AS g1 ON g1.id = gm1.group_id
         WHERE gm1.musician_id = m.id AND g1.name = 'Kyuss'
     );
-
-
--- # Вывод всех песен с соответствующими исполнителями (не относится к практике)
-SELECT s.name AS song_name,
-        CASE WHEN (m.name, g.name) IS NULL THEN NULL
-             ELSE concat(m.name, g.name) END AS performer_name
-FROM song AS s
-JOIN song_performer AS sp ON sp.song_id = s.id
-JOIN performer AS p ON p.id = sp.performer_id
-LEFT OUTER JOIN musician AS m ON m.id = p.musician_id
-LEFT OUTER JOIN music_group AS g ON g.id = p.group_id
-ORDER BY s.id, g.id, m.id;
 
 
 -- #6 Гигантский пример на операцию разности 
@@ -79,7 +65,7 @@ GROUP BY a.id;
 -- #7.1 Операция группировки c HAVING - вывод альбомов с длиной не менее 10 минут
 SELECT a.name, SUM(s.duration) AS album_duration FROM album AS a
 JOIN song AS s ON s.album_id = a.id
-GROUP BY a.id HAVING album_duration >= INTERVAL '00:10:00';
+GROUP BY a.id HAVING SUM(s.duration) >= INTERVAL '00:10:00';
 
 
 -- #8 Операция сортировки - вывод альбомов в порядке убывания их длины
@@ -199,3 +185,51 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER tr_calc_dur
 AFTER INSERT ON song FOR EACH ROW
 EXECUTE FUNCTION calculate_duration();
+
+
+-- #4 Процедура для триггера BEFORE
+CREATE FUNCTION check_album_length ()
+RETURNS trigger AS $$
+DECLARE album_song_count INTEGER;
+BEGIN
+    SELECT COUNT(*) FROM song
+    WHERE album_id = NEW.album_id
+    GROUP BY album_id
+    INTO album_song_count;
+
+    IF album_song_count >= 20 THEN
+        RAISE EXCEPTION 'Превышен лимит на количество песен в альбоме';
+    ELSE
+        RAISE NOTICE 'Запись добавлена, количество песен в альбоме: %', album_song_count + 1;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tr_check_album_length
+BEFORE INSERT ON song FOR EACH ROW
+EXECUTE PROCEDURE check_album_length();
+
+
+-- Пример для проверки триггера
+INSERT INTO song (name, duration, album_id) VALUES 
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1),
+    ('test', '00:02:00', 1);
