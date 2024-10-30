@@ -7,12 +7,16 @@ import random
 class Path:
     weights: np.ndarray | None = None
     graph: np.ndarray | None = None
-    max_weight = 6
+    x: np.ndarray | None = None
+    y: np.ndarray | None = None
+    max_weight = 60
 
     def __init__(self,
                  path: list[int] | None = None,
                  weights: np.ndarray | None = None,
-                 graph: np.ndarray | None = None):
+                 graph: np.ndarray | None = None,
+                 x: np.ndarray | None = None,
+                 y: np.ndarray | None = None):
         if path is None:
             self.path = [0]
         else:
@@ -22,9 +26,13 @@ class Path:
             Path.weights = weights
         if Path.graph is None:
             Path.graph = graph
+        if Path.x is None:
+            Path.x = x
+        if Path.y is None:
+            Path.y = y
 
         if Path.weights is None or Path.graph is None:
-            raise Exception('Stupid motherfucker')
+            raise Exception('Ошибка с данными о графе')
 
     def create_new_path(self, current_weight: int = 0):
         while not all([x in self.path for x in range(Path.graph.shape[0])]):
@@ -51,6 +59,8 @@ class Path:
             self.path[i] for i in range(1, len(self.path))
             if self.path[i - 1] == 0
         ]
+        if len(possible_replacements) == 1:
+            possible_replacements = self.path[1:-1]
         while True:
             first, second = random.choices(possible_replacements, k=2)
             if first != second:
@@ -92,7 +102,7 @@ class Path:
                 result_str += " (0)"
             else:
                 cum_weight += Path.weights[point]
-                result_str += f" ({cum_weight:.2f})"
+                result_str += f" ({cum_weight})"
 
             if i != len(self.path) - 1:
                 result_str += ' -> '
@@ -107,6 +117,15 @@ class Path:
             else:
                 cum_length.append(edge_len)
         return " + ".join(map(lambda x: str(round(x, 2)), cum_length))
+    
+    def draw_path(self):
+        for i in range(len(Path.graph)):
+            plt.text(Path.x[i], Path.y[i], f'{i}')
+        for v0, v1 in zip(self.path, self.path[1:]):
+            x = (Path.x[v0], Path.x[v1])
+            y = (Path.y[v0], Path.y[v1])
+            plt.plot(x, y)
+        plt.show()
 
 
 class Solution:
@@ -127,35 +146,41 @@ class Solution:
         for i in range(len(df)):
             for j in range(len(df)):
                 graph[i][j] = np.sqrt((x[i] - x[j])**2 + (y[i] - y[j])**2)
-                if i < j:
-                    print(round(graph[i][j], 2))
+                # if i < j:
+                #     sign_1 = '-' if x[j] >= 0 else '+'
+                #     sign_2 = '-' if y[j] >= 0 else '+'
+                #     print(f'\sqrt (({x[i]} {sign_1} {abs(x[j])})^2 + ({y[i]} {sign_2} {abs(y[j])})^2) = {round(graph[i][j], 2)}')
 
-        self.current_path = Path(weights=weights, graph=graph)
+        self.current_path = Path(weights=weights, graph=graph, x=x, y=y)
         self.current_path.create_new_path()
 
     def solve(self):
-        temperature = 100
+        temperature = 1000
         history = []
         self.best_path = self.current_path
         history.append(self.best_path.length)
-        print('Initial path: ' + self.best_path.print_verbose())
-        print(f'Initial length: {self.best_path.print_length()} = {self.best_path.length:.2f} m')
+        print('Начальный путь: ' + self.best_path.print_verbose())
+        print(f'Длина начального пути: {self.best_path.print_length()} = {self.best_path.length:.2f} (м)')
         print('============\n')
+        i = 0
         while temperature > 0.0000001:
-            print(f'Temperature: {temperature}')
+            if i == 0:
+                self.best_path.draw_path()
+            i += 1
+            print(f'Температура: {temperature}')
             print('=============')
             self.current_path = Path(self.best_path.path)
             self.current_path.recreate_path()
-            print('Best path: ' + self.best_path.print_verbose())
-            print(f'Best length: {self.best_path.length:.2f} m')
-            print('Current path: ' + self.current_path.print_verbose())
-            print(f'Current length: {self.current_path.print_length()} = {self.current_path.length:.2f} м')
+            print('Лучший путь: ' + self.best_path.print_verbose())
+            print(f'Длина лучшего пути: {self.best_path.length:.2f} м')
+            print('Текущий путь: ' + self.current_path.print_verbose())
+            print(f'Длина текущего пути: {self.current_path.print_length()} = {self.current_path.length:.2f} (м)')
             if self.current_path.length < self.best_path.length:
                 self.best_path = self.current_path
             else:
                 prob_lim = np.exp(-(self.current_path.length -
                                     self.best_path.length) /
-                                  (1000 * temperature))
+                                  (temperature))
                 probability = np.random.random()
                 print(f'H = {prob_lim}; p = {probability}')
                 if probability < prob_lim:
@@ -164,10 +189,11 @@ class Solution:
             print('===============\n')
             history.append(self.best_path.length)
         
-        print('Best path: ' + self.best_path.print_verbose())
-        print(f'Best length: {self.best_path.length:.2f} m')
+        print('Найденное лучшее решение: ' + self.best_path.print_verbose())
+        print(f'Длина найденного решения: {self.best_path.length:.2f} m')
         plt.plot(history)
         plt.show()
+        self.best_path.draw_path()
 
 
 def main():
