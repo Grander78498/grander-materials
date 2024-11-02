@@ -31,27 +31,28 @@ class Solution:
                 return new_x
 
     def solve(self):
-        temperature = 2
+        temperature = 100
         t0 = temperature
         history = []
         history.append(self.rastrigin(self.best_solution))
         print(
-            f'Исходное решение: ({", ".join(map(str, self.current_solution))})'
+            f'Исходное решение: ({", ".join(map(lambda x: str(round(x, 2)), self.current_solution))})'
         )
         print(
             f'Исходное значение функции: {self.rastrigin(self.current_solution)}')
         print('============\n')
-        for k in range(2, 10001):
+        k = 2
+        while t0 > 10:
             print(f'Температура: {t0}')
             print('=============')
             self.current_solution = self.generate_solution(temperature)
             current_rastrigin, best_rastrigin = self.rastrigin(
                 self.current_solution), self.rastrigin(self.best_solution)
             print(
-                f'Лучшее решение: ({", ".join(map(str, self.best_solution))})')
+                f'Лучшее решение: ({", ".join(map(lambda x: str(round(x, 2)), self.best_solution))})')
             print(f'Лучшее значение функции: {best_rastrigin}')
             print(
-                f'Текущее решение: ({", ".join(map(str, self.current_solution))})'
+                f'Текущее решение: ({", ".join(map(lambda x: str(round(x, 2)), self.current_solution))})'
             )
             print(f'Текущее значение функции: {current_rastrigin}')
             if current_rastrigin < best_rastrigin:
@@ -63,11 +64,12 @@ class Solution:
                 if probability < prob_lim:
                     self.best_solution = self.current_solution
             t0 = temperature / (k ** (1 / self.n))
+            k += 1
             print('===============\n')
             history.append(self.rastrigin(self.best_solution))
 
         best_rastrigin = self.rastrigin(self.best_solution)
-        print(f'Лучшее решение: ({", ".join(map(str, self.best_solution))})')
+        print(f'Лучшее решение: ({", ".join(map(lambda x: str(round(x, 2)), self.best_solution))})')
         print(f'Лучшее значение функции: {best_rastrigin}')
         plt.plot(history)
         plt.show()
