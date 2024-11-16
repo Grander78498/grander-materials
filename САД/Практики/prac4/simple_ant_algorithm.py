@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 from math import sqrt
-from tqdm import tqdm
 
 
 max_weight = 6
@@ -111,11 +110,11 @@ class Ant:
 class AntColony:
     def __init__(self, ant_count: int = 10):
         self.ants = [Path() for _ in range(ant_count)]
-        self.vapor_rate = 0.05
-        self.alpha = 2
+        self.vapor_rate = 0.3
+        self.alpha = 1
 
     def solution_step(self):
-        for ant in tqdm(self.ants):
+        for ant in self.ants:
             ant.create_new_path(self.alpha)
         
         for ant in self.ants:

@@ -31,7 +31,7 @@ class Solution:
                 return new_x
 
     def solve(self):
-        temperature = 100
+        temperature = 10
         t0 = temperature
         history = []
         history.append(self.rastrigin(self.best_solution))
@@ -42,7 +42,7 @@ class Solution:
             f'Исходное значение функции: {self.rastrigin(self.current_solution)}')
         print('============\n')
         k = 2
-        while t0 > 10:
+        while t0 > 0.1:
             print(f'Температура: {t0}')
             print('=============')
             self.current_solution = self.generate_solution(temperature)
