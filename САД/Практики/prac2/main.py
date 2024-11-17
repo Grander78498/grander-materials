@@ -9,7 +9,7 @@ class Path:
     graph: np.ndarray | None = None
     x: np.ndarray | None = None
     y: np.ndarray | None = None
-    max_weight = 60
+    max_weight = 50
 
     def __init__(self,
                  path: list[int] | None = None,
@@ -39,8 +39,10 @@ class Path:
             possible_weights = [
                 i for i in range(len(Path.weights))
                 if Path.weights[i] <= (Path.max_weight - current_weight) and (
-                    i not in self.path or i == 0)
+                    i not in self.path)
             ]
+            if len(possible_weights) == 0:
+                possible_weights = [0]
             while True:
                 next_place = random.choice(possible_weights)
                 if next_place == 0:
@@ -75,7 +77,7 @@ class Path:
     def recreate_path(self):
         first_index, second_index = self.get_replacements()
         first, second = self.path[first_index], self.path[second_index]
-        print(f'Replaces: {first}, {second}')
+        print(f'Замены: {first}, {second}')
 
         self.path = self.path[:first_index + 1]
         self.path[-1] = second
@@ -155,7 +157,7 @@ class Solution:
         self.current_path.create_new_path()
 
     def solve(self):
-        temperature = 1000
+        temperature = 100
         history = []
         self.best_path = self.current_path
         history.append(self.best_path.length)
@@ -163,7 +165,7 @@ class Solution:
         print(f'Длина начального пути: {self.best_path.print_length()} = {self.best_path.length:.2f} (м)')
         print('============\n')
         i = 0
-        while temperature > 0.0000001:
+        while temperature > 0.000000001:
             if i == 0:
                 self.best_path.draw_path()
             i += 1
