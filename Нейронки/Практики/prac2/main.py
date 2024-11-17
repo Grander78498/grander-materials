@@ -89,7 +89,7 @@ class Dataset:
 
 
 def main():
-    df = pd.read_csv('dataset/heart.csv')
+    df = pd.read_csv('../dataset/heart.csv')
     dataset = Dataset()
     dataset.normalize_data(df)
     dataset.prepare_dataset()

@@ -68,7 +68,7 @@ class StupidNeuralNetwork:
         self.batch_size = len(dataset) if self.batch_size is None else self.batch_size
 
         for epoch in range(self.epochs):
-            print(f"Epoch: {epoch + 1}/{self.epochs}")
+            print(f"Эпоха: {epoch + 1}/{self.epochs}")
             epoch_loss = []
             for i in range(0, len(dataset), self.batch_size):
                 X_batch = dataset[i:i + self.batch_size]
@@ -81,28 +81,28 @@ class StupidNeuralNetwork:
                 self.backward(y_batch, result)
 
             avg_loss = np.mean(epoch_loss)
-            print(f'Loss: {avg_loss}')
+            print(f'Ошибка: {avg_loss}')
             epoch_loss_list.append(avg_loss)
 
             predictions = self.forward(dataset)
             predictions = (predictions >= 0.5).astype(np.int8)
             accuracy = (predictions == target).mean() * 100
-            print(f'Accuracy: {accuracy}%')
+            print(f'Точность: {accuracy}%')
             accuracy_list.append(accuracy)
 
         plt.plot(range(1, self.epochs + 1), accuracy_list)
-        plt.title('Accuracy over epochs')
+        plt.title('Точность')
         plt.show()
 
         plt.plot(range(1, self.epochs + 1), epoch_loss_list)
-        plt.title('Loss over epochs')
+        plt.title('Ошибка')
         plt.show()
 
     def test(self, data: np.ndarray, target: np.ndarray):
         result = self.forward(data)
         result = (result >= 0.5).astype(np.int8)
         accuracy = (result == target).mean() * 100
-        print(f'Test Accuracy: {accuracy}%')
+        print(f'Точность на тестовом датасете: {accuracy}%')
         return accuracy
 
 
@@ -143,7 +143,7 @@ class Dataset:
 
 
 def main():
-    df = pd.read_csv('dataset/heart.csv')
+    df = pd.read_csv('../dataset/heart.csv')
     dataset = Dataset()
     dataset.normalize_data(df)
     dataset.prepare_dataset()
