@@ -50,11 +50,10 @@ class TestKinopoisk(unittest.TestCase):
     def setUp(self) -> None:
         self.browser = webdriver.Firefox()
 
-    @unittest.skip("Долгая хуйня")
     def test_check_genres(self):
         url = 'https://www.kinopoisk.ru/lists/categories/movies/8/'
         self.browser.get(url)
-        time.sleep(20)
+        time.sleep(10)
         genres = self.browser.find_elements(By.CSS_SELECTOR,
                                             '.styles_content__2mO6X a')
         genre_urls = [genre.get_attribute('href') for genre in genres]
@@ -66,7 +65,7 @@ class TestKinopoisk(unittest.TestCase):
         for genre_name, genre_url in zip(genre_names, genre_urls):
             print(f"Проверка жанра: {genre_name}")
             self.browser.get(genre_url)
-            time.sleep(2)
+            time.sleep(1)
             films = self.browser.find_elements(By.CLASS_NAME,
                                                'styles_root__ti07r')
             for film in films:
@@ -77,13 +76,12 @@ class TestKinopoisk(unittest.TestCase):
                 self.assertIn(
                     plural_words[genre_name], film_desc,
                     f"Жанр '{plural_words[genre_name]}' не найден в описании.")
-            time.sleep(2)
+            time.sleep(1)
 
-    @unittest.skip("Долгая хуйня")
     def test_film_search(self):
         url = 'https://www.kinopoisk.ru/'
         self.browser.get(url)
-        time.sleep(15)
+        time.sleep(10)
         search_field = self.browser.find_element(By.NAME, 'kp_query')
         search_field.click()
         for film_name in real_films:
@@ -105,19 +103,20 @@ class TestKinopoisk(unittest.TestCase):
     def test_serial_index(self):
         url = 'https://www.kinopoisk.ru/special/index/#/?dateFrom=2024-10-21&dateTo=2024-10-27'
         self.browser.get(url)
-        time.sleep(5)
+        time.sleep(10)
         main_index = int(
             self.browser.find_element(By.CLASS_NAME,
                                       'MainHeader_value__2mIDd').text)
         rows = self.browser.find_elements(By.CLASS_NAME,
                                           'Table_link__Fz2Jp')[:100]
         for i, row in enumerate(rows):
-            print(f'{i + 1} iteration')
             spans = row.find_elements(By.TAG_NAME, 'span')
             index = int(spans[2].text)
             percent = float(spans[3].text.removesuffix('%').replace(',', '.'))
             self.assertAlmostEqual(round(index / main_index * 100, 2), percent,
                                    1)
+            print(f'{i + 1} итерация\n Указанное значение: {percent}, реальное значение: {round(index / main_index * 100, 2)}')
+            time.sleep(0.1)
 
     def tearDown(self) -> None:
         self.browser.close()
