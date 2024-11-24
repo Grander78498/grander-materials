@@ -14,17 +14,10 @@ class RBFNetwork:
         self.lr = lr
         self.epochs = epochs
 
-        # Центры радиально-базисных функций
-        # self.centers = np.random.uniform(-1, 1, (hidden_dim, input_dim))
-        # Весовые коэффициенты
-        self.weights = np.random.uniform(-0.5, 0.5, (hidden_dim, output_dim))
-        self.bias = np.random.uniform(-0.5, 0.5, (output_dim, ))
-
     def init_centers(self, dataset: np.ndarray):
         kmeans = KMeans(n_clusters = self.hidden_dim, random_state = 78498)
         kmeans.fit_predict(dataset)
         self.centers = kmeans.cluster_centers_
-        # self.centers = np.vstack([dataset.mean(axis=0) for _ in range(self.hidden_dim)])
 
     @staticmethod
     def gaussian_rbf(x, center, beta):
@@ -48,25 +41,6 @@ class RBFNetwork:
         RBF_output = self.compute_rbf_layer(X)
         output = RBF_output @ self.weights
         return output
-
-    # def backward(self, X, y, output, RBF_output):
-    #     # Градиенты ошибки
-    #     error = output - y
-    #     grad_weights = RBF_output.T @ error / X.shape[0]
-    #     grad_bias = error.mean(axis=0)
-
-    #     # Обновление весов
-    #     self.weights -= self.lr * grad_weights
-    #     self.bias -= self.lr * grad_bias
-
-    #     # Обновление центров (через цепное правило)
-    #     beta = 1.0
-    #     for i in range(self.hidden_dim):
-    #         for j in range(self.input_dim):
-    #             grad_center = np.sum(-2 * beta * error[:, 0] *
-    #                                  (X[:, j] - self.centers[i, j]) *
-    #                                  RBF_output[:, i]) / X.shape[0]
-    #             self.centers[i, j] -= self.lr * grad_center
 
     def train(self, dataset: np.ndarray, target: np.ndarray):
         self.init_centers(dataset)
