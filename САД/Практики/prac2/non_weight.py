@@ -126,7 +126,7 @@ class Solution:
         self.current_path.create_new_path()
 
     def solve(self):
-        temperature = 10000
+        temperature = 100000
         history = []
         self.best_path = self.current_path
         history.append(self.best_path.length)
@@ -134,9 +134,7 @@ class Solution:
         print(f'Длина начального пути: {self.best_path.print_length()} = {self.best_path.length:.2f} (м)')
         print('============\n')
         i = 0
-        while temperature > 0.000000001:
-            if i % 30 == 0:
-                self.best_path.draw_path()
+        while temperature > 1e-20:
             i += 1
             print(f'Температура: {temperature}')
             print('=============')
@@ -156,7 +154,7 @@ class Solution:
                 print(f'H = {prob_lim}; p = {probability}')
                 if probability < prob_lim:
                     self.best_path = self.current_path
-            temperature *= 0.9
+            temperature *= 0.99
             print('===============\n')
             history.append(self.best_path.length)
             

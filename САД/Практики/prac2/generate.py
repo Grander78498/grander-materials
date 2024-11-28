@@ -12,7 +12,7 @@ def generate(min_coord: int, max_coord: int, min_weight: int, max_weight: int,
 
 
 def main():
-    min_coord, max_coord, min_weight, max_weight, n = -50, 50, 1, 7, 10
+    min_coord, max_coord, min_weight, max_weight, n = -1000, 1000, 1, 7, 8
     x, y, weight = generate(min_coord, max_coord, min_weight, max_weight, n + 1)
     df = pd.DataFrame({'x': x, 'y': y, 'weight': weight})
     df.to_csv('data.csv', index=False)

@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import random
+import time
 from math import sqrt
 
 
@@ -41,28 +42,32 @@ class Path:
 
     def create_new_path(self, alpha: float, beta: float):
         self.path = [0]
+        # self.path = [random.randint(0, len(Path.graph) - 1)]
         while not all([x in self.path for x in range(len(Path.graph))]):
             current_place = self.path[-1]
             possible_places = [
                 i for i in range(len(Path.graph))
                 if i not in self.path
             ]
-            total_pheromone = 0
+            pheromones = []
             for next_place in possible_places:
-                total_pheromone += (Path.graph[current_place][next_place].pheromone ** alpha 
-                                    + (1 / Path.graph[current_place][next_place].distance) ** beta)
+                pheromones.append((Path.graph[current_place][next_place].pheromone ** alpha 
+                                    * (1 / Path.graph[current_place][next_place].distance) ** beta))
+            total_pheromone = sum(pheromones)
+            pheromones = [elem / total_pheromone for elem in pheromones]
+            next_place = np.random.choice(possible_places, p=pheromones)
+            self.path.append(next_place)
+            continue
 
             total_probability = 0
-            probability = random.random()
-            for next_place in possible_places:
-                total_probability += ((Path.graph[current_place][next_place].pheromone ** alpha 
-                                       + (1 / Path.graph[current_place][next_place].distance) ** beta) 
-                                       / total_pheromone)
+            for next_place, pher in zip(possible_places, pheromones):
+                total_probability += pher / total_pheromone
+                probability = random.random()
                 if probability < total_probability:
                     self.path.append(next_place)
                     break
             
-        self.path.append(0)
+        self.path.append(self.path[0])
 
     @property
     def length(self) -> float:
@@ -111,25 +116,29 @@ class Ant:
 class AntColony:
     def __init__(self, ant_count: int = 10):
         self.ants = [Path() for _ in range(ant_count)]
-        self.vapor_rate = 0.2
-        self.alpha = 2
-        self.beta = 2
+        self.vapor_rate = 0.5
+        self.alpha = 1
+        self.beta = 5
 
     def solution_step(self):
         for ant in self.ants:
             ant.create_new_path(self.alpha, self.beta)
             print(ant.print_verbose())
 
+        for i in range(len(Path.graph)):
+            for j in range(len(Path.graph)):
+                Path.graph[i][j].pheromone *= (1 - self.vapor_rate)
         
         for ant in self.ants:
-            delta_pheromone = 1 / ant.length
+            delta_pheromone = np.exp(1 / ant.length)
             for i, j in zip(ant.path, ant.path[1:]):
                 Path.graph[i][j].pheromone = Path.graph[i][j].pheromone + delta_pheromone
                 Path.graph[j][i].pheromone = Path.graph[j][i].pheromone + delta_pheromone
 
         for i in range(len(Path.graph)):
             for j in range(len(Path.graph)):
-                Path.graph[i][j].pheromone *= (1 - self.vapor_rate)
+                Path.graph[i][j].pheromone *= self.vapor_rate
+
 
         best_path = self.ants[0]
         best_length = best_path.length
@@ -153,7 +162,7 @@ class Solution:
         #                ignore_index=True)
         x = df['x'].to_numpy()
         y = df['y'].to_numpy()
-        graph = [[GraphElement() for _ in range(len(df))] for _ in range(len(df))]
+        self.graph = graph = [[GraphElement() for _ in range(len(df))] for _ in range(len(df))]
         pheromone = random.random()
         for i in range(len(df)):
             for j in range(i, len(df)):
@@ -164,8 +173,8 @@ class Solution:
         Path(graph=graph, x=x, y=y)
 
     def solve(self):
-        ant_colony = AntColony(ant_count=10)
-        steps = 200
+        ant_colony = AntColony(ant_count=len(self.graph))
+        steps = 100
         history = []
         for step in range(steps):
             print(f'Итерация {step + 1} / {steps}')
