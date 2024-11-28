@@ -3,9 +3,6 @@ import matplotlib.pyplot as plt
 
 
 def rastrigin(x: np.ndarray):
-    # a = x[0]
-    # b = x[1]
-    # return (1.5 - a + a * b) ** 2 + (2.25 - a + a * b ** 2) ** 2 + (2.625 - a + a * b ** 3) ** 2
     return 10 * len(x) + np.sum(x**2 - 10 * np.cos(2 * np.pi * x))
 
 
