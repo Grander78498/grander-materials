@@ -15,52 +15,51 @@ class GraphElement:
 
 
 class Path:
-    weights: np.ndarray | None = None
     graph: list[list[GraphElement]] | None = None
+    x: np.ndarray | None = None
+    y: np.ndarray | None = None
 
     def __init__(self,
                  path: list[int] | None = None,
-                 weights: np.ndarray | None = None,
-                 graph: list[list[GraphElement]] | None = None):
+                 graph: list[list[GraphElement]] | None = None,
+                 x: np.ndarray | None = None,
+                 y: np.ndarray | None = None):
         if path is None:
             self.path = [0]
         else:
             self.path = path
 
-        if Path.weights is None:
-            Path.weights = weights
         if Path.graph is None:
             Path.graph = graph
+        if Path.x is None:
+            Path.x = x
+        if Path.y is None:
+            Path.y = y
 
-        if Path.weights is None or Path.graph is None:
+        if Path.graph is None:
             raise Exception('Stupid motherfucker')
 
-    def create_new_path(self, alpha: float):
-        current_weight = 0
+    def create_new_path(self, alpha: float, beta: float):
         self.path = [0]
         while not all([x in self.path for x in range(len(Path.graph))]):
             current_place = self.path[-1]
             possible_places = [
-                i for i in range(len(Path.weights))
-                if Path.weights[i] <= (max_weight - current_weight) and (
-                    i not in self.path or i == 0)
+                i for i in range(len(Path.graph))
+                if i not in self.path
             ]
             total_pheromone = 0
             for next_place in possible_places:
-                total_pheromone += Path.graph[current_place][next_place].pheromone ** alpha
+                total_pheromone += (Path.graph[current_place][next_place].pheromone ** alpha 
+                                    + (1 / Path.graph[current_place][next_place].distance) ** beta)
 
             total_probability = 0
             probability = random.random()
             for next_place in possible_places:
-                total_probability += Path.graph[current_place][next_place].pheromone ** alpha / total_pheromone
+                total_probability += ((Path.graph[current_place][next_place].pheromone ** alpha 
+                                       + (1 / Path.graph[current_place][next_place].distance) ** beta) 
+                                       / total_pheromone)
                 if probability < total_probability:
-                    if next_place != current_place:
-                        self.path.append(next_place)
-                        if next_place == 0:
-                            current_weight = 0
-                        else:
-                            next_weight = Path.weights[next_place]
-                            current_weight += next_weight
+                    self.path.append(next_place)
                     break
             
         self.path.append(0)
@@ -77,15 +76,8 @@ class Path:
 
     def print_verbose(self):
         result_str = ''
-        cum_weight = 0
         for i, point in enumerate(self.path):
             result_str += str(point)
-            if point == 0:
-                cum_weight = 0
-                result_str += " (0)"
-            else:
-                cum_weight += Path.weights[point]
-                result_str += f" ({cum_weight:.2f})"
 
             if i != len(self.path) - 1:
                 result_str += ' -> '
@@ -100,6 +92,15 @@ class Path:
             else:
                 cum_length.append(edge_len)
         return " + ".join(map(lambda x: str(round(x, 2)), cum_length))
+    
+    def draw_path(self):
+        for i in range(len(Path.graph)):
+            plt.text(Path.x[i], Path.y[i], f'{i}')
+        for v0, v1 in zip(self.path, self.path[1:]):
+            x = (Path.x[v0], Path.x[v1])
+            y = (Path.y[v0], Path.y[v1])
+            plt.plot(x, y)
+        plt.show()
 
 
 class Ant:
@@ -110,18 +111,21 @@ class Ant:
 class AntColony:
     def __init__(self, ant_count: int = 10):
         self.ants = [Path() for _ in range(ant_count)]
-        self.vapor_rate = 0.3
-        self.alpha = 1
+        self.vapor_rate = 0.2
+        self.alpha = 2
+        self.beta = 2
 
     def solution_step(self):
         for ant in self.ants:
-            ant.create_new_path(self.alpha)
+            ant.create_new_path(self.alpha, self.beta)
+            print(ant.print_verbose())
+
         
         for ant in self.ants:
             delta_pheromone = 1 / ant.length
             for i, j in zip(ant.path, ant.path[1:]):
-                Path.graph[i][j].pheromone = Path.graph[i][j].pheromone * self.vapor_rate + delta_pheromone
-                Path.graph[j][i].pheromone = Path.graph[j][i].pheromone * self.vapor_rate + delta_pheromone
+                Path.graph[i][j].pheromone = Path.graph[i][j].pheromone + delta_pheromone
+                Path.graph[j][i].pheromone = Path.graph[j][i].pheromone + delta_pheromone
 
         for i in range(len(Path.graph)):
             for j in range(len(Path.graph)):
@@ -145,22 +149,22 @@ class Solution:
 
     def create_graph(self):
         df = pd.read_csv('../prac2/data.csv')
-        df = pd.concat([pd.DataFrame([[0, 0, 0]], columns=df.columns), df],
-                       ignore_index=True)
-        weights = df['weight'].to_numpy()
+        # df = pd.concat([pd.DataFrame([[0, 0, 0]], columns=df.columns), df],
+        #                ignore_index=True)
         x = df['x'].to_numpy()
         y = df['y'].to_numpy()
         graph = [[GraphElement() for _ in range(len(df))] for _ in range(len(df))]
+        pheromone = random.random()
         for i in range(len(df)):
             for j in range(i, len(df)):
                 graph[i][j].distance = graph[j][i].distance = sqrt((x[i] - x[j])**2 + (y[i] - y[j])**2)
                 if i != j:
-                    graph[i][j].pheromone = graph[j][i].pheromone = random.random()
+                    graph[i][j].pheromone = graph[j][i].pheromone = pheromone
 
-        Path(weights=weights, graph=graph)
+        Path(graph=graph, x=x, y=y)
 
     def solve(self):
-        ant_colony = AntColony(ant_count=100)
+        ant_colony = AntColony(ant_count=10)
         steps = 200
         history = []
         for step in range(steps):
@@ -171,8 +175,10 @@ class Solution:
             history.append(self.best_path.length)
             print(f'Лучший путь: {self.best_path.print_verbose()}')
             print(f'Длина лучшего пути: {self.best_path.length}')
+            print('\n\n\n')
         plt.plot(history)
         plt.show()
+        self.best_path.draw_path()
         
 
 
