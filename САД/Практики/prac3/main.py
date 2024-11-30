@@ -3,9 +3,6 @@ import matplotlib.pyplot as plt
 
 
 def rastrigin(x: np.ndarray):
-    # a = x[0]
-    # b = x[1]
-    # return (1.5 - a + a * b) ** 2 + (2.25 - a + a * b ** 2) ** 2 + (2.625 - a + a * b ** 3) ** 2
     return 10 * len(x) + np.sum(x**2 - 10 * np.cos(2 * np.pi * x))
 
 
@@ -26,9 +23,14 @@ class Particle:
 
     def correct_position(self):
         self.x += self.speed
+        for i in range(len(self.x)):
+            if self.x[i] > self._max:
+                self.x[i] = self._max
+            elif self.x[i] < self._min:
+                self.x[i] = self._min
 
     def __str__(self):
-        return f"Current position: {self.x} -- best position: {self.best_x}"
+        return f"Текущая позиция: {self.x} -- лучшая позиция: {self.best_x}"
 
 
 class Swarm:
@@ -58,24 +60,22 @@ class Swarm:
         ax = plt.gca()
         ax.set_xlim(-5.12, 5.12)
         ax.set_ylim(-5.12, 5.12)
-        plt.scatter(particle_x, particle_y)
+        plt.scatter(particle_x, particle_y, s=[1.5 for _ in self.particles])
         plt.show()
 
 
 class Solution:
 
     def __init__(self):
-        self.swarm = Swarm(particle_count=100)
+        self.swarm = Swarm(particle_count=1000)
 
     def solve(self):
-        steps = 200
+        steps = 50
         history = []
-        for step in range(steps):
+        for step in range(1, steps + 1):
             value, x = self.swarm.solution_step()
-            print(f'Итерация: {step + 1}. Значение: {value} в точке {x}')
+            print(f'Итерация: {step}. Значение: {value} в точке {x}')
             history.append(value)
-            # if step % 20 == 0:
-            #     self.swarm.draw_swarm()
         plt.plot(history)
         plt.show()
 
