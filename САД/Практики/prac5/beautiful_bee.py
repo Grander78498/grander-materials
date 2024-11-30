@@ -1,10 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+from matplotlib.animation import FuncAnimation
 
 def rastrigin(x: np.ndarray):
     return np.sum(np.square(x) - 10 * np.cos(2 * np.pi * x) + 10, axis=-1)
-
 
 class BeeColony:
     def __init__(self, bee_count: int = 100,
@@ -20,14 +19,16 @@ class BeeColony:
         self._max = 5.12
         self._min = -self._max
 
-    def draw_bees(self, bees):
+    def draw_bees(self, bees, ax, iteration, best_bee, best_value):
         bee_x = [bee[0] for bee in bees]
         bee_y = [bee[1] for bee in bees]
-        ax = plt.gca()
-        for i in range(len(self.bees)):
-            ax.annotate(str(i), (bees[i][0], bees[i][1]))
-        plt.scatter(bee_x, bee_y, s=10)
-        plt.show()
+        ax.clear()
+        ax.scatter(bee_x, bee_y, s=10)
+        ax.set_title(f'Лучшая точка: {np.round(best_bee, 2)},'
+                     f' значение функции: {np.round(best_value, 2)}\n'
+                     f'Номер итерации: {iteration}')
+        ax.set_xlim([self._min, self._max])
+        ax.set_ylim([self._min, self._max])
 
     def init_population(self):
         self.bees = (self._max - self._min) * np.random.random(size=(self.bee_count, self.n)) + self._min
@@ -57,30 +58,38 @@ class BeeColony:
     def find_field_best(self, k: int):
         cnt = 0
         new_best_bee = None
-        while cnt < self.max_iter:
-            field = self.fields[k]
-            if new_best_bee is None:
-                current_best_bee = self.bees[self.fields[k][0]]
+        fig, ax = plt.subplots()
+
+        def update(frame):
+            nonlocal cnt, new_best_bee
+            if cnt < self.max_iter:
+                field = self.fields[k]
+                if new_best_bee is None:
+                    current_best_bee = self.bees[self.fields[k][0]]
+                else:
+                    current_best_bee = new_best_bee
+                min_search = np.clip(current_best_bee - self.search_size, self._min, self._max)
+                max_search = np.clip(current_best_bee + self.search_size, self._min, self._max)
+                new_bees = (max_search - min_search) * np.random.random(size=(self.bee_count - 1, self.n)) + min_search
+                new_bees = np.vstack([new_bees, current_best_bee])
+                values = rastrigin(new_bees)
+                new_best_bee = new_bees[np.where(np.abs(np.min(values) - values) < 1e-10)]
+
+                if np.linalg.norm(current_best_bee - new_best_bee) < 1e-5:
+                    cnt += 1
+                else:
+                    cnt = 0
+                self.draw_bees(new_bees, ax, cnt, new_best_bee, rastrigin(new_best_bee))
             else:
-                current_best_bee = new_best_bee
-            min_search = np.clip(current_best_bee - self.search_size, self._min, self._max)
-            max_search = np.clip(current_best_bee + self.search_size, self._min, self._max)
-            new_bees = (max_search - min_search) * np.random.random(size=(self.bee_count - 1, self.n)) + min_search
-            new_bees = np.vstack([new_bees, current_best_bee])
-            values = rastrigin(new_bees)
-            new_best_bee = new_bees[np.where(np.abs(np.min(values) - values) < 1e-10)]
+                print(new_best_bee, rastrigin(new_best_bee))
+                plt.close(fig)
 
-            if np.linalg.norm(current_best_bee - new_best_bee) < 1e-5:
-                cnt += 1
-            else:
-                cnt = 0
-        print(new_best_bee, rastrigin(new_best_bee))
-
-
+        ani = FuncAnimation(fig, update, frames=range(self.max_iter * self.bee_count), repeat=False)
+        plt.show()
 
 if __name__ == '__main__':
-    bee_colony = BeeColony(search_size=1, max_distance=4, max_iter=100,
-                           bee_count=100)
+    bee_colony = BeeColony(search_size=1, max_distance=100, max_iter=30,
+                           bee_count=1000)
     bee_colony.init_population()
     bee_colony.create_fields()
     for i in range(len(bee_colony.fields)):
