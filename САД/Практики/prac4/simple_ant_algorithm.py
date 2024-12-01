@@ -38,11 +38,10 @@ class Path:
             Path.y = y
 
         if Path.graph is None:
-            raise Exception('Stupid motherfucker')
+            raise Exception('Граф не построен')
 
-    def create_new_path(self, alpha: float, beta: float):
-        self.path = [0]
-        # self.path = [random.randint(0, len(Path.graph) - 1)]
+    def create_new_path(self, alpha: float, beta: float, start_position: int = 0):
+        self.path = [start_position]
         while not all([x in self.path for x in range(len(Path.graph))]):
             current_place = self.path[-1]
             possible_places = [
@@ -54,18 +53,13 @@ class Path:
                 pheromones.append((Path.graph[current_place][next_place].pheromone ** alpha 
                                     * (1 / Path.graph[current_place][next_place].distance) ** beta))
             total_pheromone = sum(pheromones)
+            for next_place in possible_places:
+                print(f"p^k_{current_place}{next_place} = "
+                    f"({Path.graph[current_place][next_place].pheromone}^{alpha}_{current_place}{next_place}"
+                    f" {1 / Path.graph[current_place][next_place].distance}^{beta}_{current_place}{next_place})/({total_pheromone})")
             pheromones = [elem / total_pheromone for elem in pheromones]
             next_place = np.random.choice(possible_places, p=pheromones)
             self.path.append(next_place)
-            continue
-
-            total_probability = 0
-            for next_place, pher in zip(possible_places, pheromones):
-                total_probability += pher / total_pheromone
-                probability = random.random()
-                if probability < total_probability:
-                    self.path.append(next_place)
-                    break
             
         self.path.append(self.path[0])
 
@@ -79,12 +73,22 @@ class Path:
     def __str__(self) -> str:
         return ', '.join(map(str, self.path))
 
-    def print_verbose(self):
+    def print_verbose(self, start_at_zero: bool = False):
         result_str = ''
-        for i, point in enumerate(self.path):
+        if start_at_zero:
+            if self.path.index(0) != 0:
+                index = self.path.index(0)
+                first_part = self.path[index:]
+                second_part = self.path[1:index]
+                path = first_part + second_part + [0]
+            else:
+                path = self.path
+        else:
+            path = self.path
+        for i, point in enumerate(path):
             result_str += str(point)
 
-            if i != len(self.path) - 1:
+            if i != len(path) - 1:
                 result_str += ' -> '
         return result_str
 
@@ -121,19 +125,18 @@ class AntColony:
         self.beta = 5
 
     def solution_step(self):
-        for ant in self.ants:
+        for i, ant in enumerate(self.ants):
             ant.create_new_path(self.alpha, self.beta)
-            print(ant.print_verbose())
+            # print(ant.print_verbose())
 
         for i in range(len(Path.graph)):
             for j in range(len(Path.graph)):
                 Path.graph[i][j].pheromone *= (1 - self.vapor_rate)
         
         for ant in self.ants:
-            delta_pheromone = np.exp(1 / ant.length)
+            delta_pheromone = 1 / ant.length
             for i, j in zip(ant.path, ant.path[1:]):
                 Path.graph[i][j].pheromone = Path.graph[i][j].pheromone + delta_pheromone
-                Path.graph[j][i].pheromone = Path.graph[j][i].pheromone + delta_pheromone
 
         for i in range(len(Path.graph)):
             for j in range(len(Path.graph)):
@@ -158,36 +161,49 @@ class Solution:
 
     def create_graph(self):
         df = pd.read_csv('../prac2/data.csv')
-        # df = pd.concat([pd.DataFrame([[0, 0, 0]], columns=df.columns), df],
-        #                ignore_index=True)
         x = df['x'].to_numpy()
         y = df['y'].to_numpy()
         self.graph = graph = [[GraphElement() for _ in range(len(df))] for _ in range(len(df))]
         pheromone = random.random()
+        d = []
         for i in range(len(df)):
             for j in range(i, len(df)):
                 graph[i][j].distance = graph[j][i].distance = sqrt((x[i] - x[j])**2 + (y[i] - y[j])**2)
+                if i < j:
+                    sign_1 = '-' if x[j] >= 0 else '+'
+                    sign_2 = '-' if y[j] >= 0 else '+'
+                    print(f'\sqrt (({x[i]} {sign_1} {abs(x[j])})^2 + ({y[i]} {sign_2} {abs(y[j])})^2) = {round(graph[i][j].distance, 2)}')
+                    d.append(round(graph[i][j].distance, 2))
                 if i != j:
                     graph[i][j].pheromone = graph[j][i].pheromone = pheromone
-
+        print('\n'.join(map(str, d)))
         Path(graph=graph, x=x, y=y)
 
     def solve(self):
-        ant_colony = AntColony(ant_count=len(self.graph))
-        steps = 100
+        ant_colony = AntColony(ant_count=2)
+        steps = 2
         history = []
         for step in range(steps):
             print(f'Итерация {step + 1} / {steps}')
+            if (step + 1) % 1 == 0 or step == 0:
+                for ant in ant_colony.ants:
+                    print(ant.print_verbose(start_at_zero=True))
+                    print(ant.length)
             current_path = ant_colony.solution_step()
             if self.best_path is None or current_path.length < self.best_path.length:
                 self.best_path = current_path
             history.append(self.best_path.length)
-            print(f'Лучший путь: {self.best_path.print_verbose()}')
+            print(f'Лучший путь: {self.best_path.print_verbose(start_at_zero=True)}')
             print(f'Длина лучшего пути: {self.best_path.length}')
             print('\n\n\n')
+        fig, ax = plt.subplots()
+        ax.set_title(f'Длина лучшего пути: {self.best_path.length}')
         plt.plot(history)
         plt.show()
         self.best_path.draw_path()
+
+        # for i in range(len(Path.graph)):
+        #     print(" || ".join(f"{Path.graph[i][j].pheromone}" for j in range(len(Path.graph))))
         
 
 
