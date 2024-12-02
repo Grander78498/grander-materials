@@ -41,8 +41,10 @@ class Path:
             raise Exception('Граф не построен')
 
     def create_new_path(self, alpha: float, beta: float, start_position: int = 0):
-        self.path = [start_position]
+        self.path = [0]
+        order = {0: 'первого', 1: 'второго'}
         while not all([x in self.path for x in range(len(Path.graph))]):
+            print(f"Далее приведены расчёты вероятностей перехода {order[start_position]} муравья c {self.path[-1] + 1}-й вершины:\n")
             current_place = self.path[-1]
             possible_places = [
                 i for i in range(len(Path.graph))
@@ -54,16 +56,34 @@ class Path:
                                     * (1 / Path.graph[current_place][next_place].distance) ** beta))
             total_pheromone = sum(pheromones)
             pheromones = [elem / total_pheromone for elem in pheromones]
+            for next_place, ph in zip(possible_places, pheromones):
+                print(f"p^{start_position + 1}_{current_place + 1}{next_place + 1} = "
+                    f"({Path.graph[current_place][next_place].pheromone:.3f}^{alpha}"
+                    f" * {100 / Path.graph[current_place][next_place].distance:.3f}^{beta})"
+                    f"/({total_pheromone:.5f}) = "
+                    f"{ph:.3f}")
+            print()
 
             probability = np.random.random()
             total = 0
+            print(f'Сгенерировано случайное число r = {probability:.3f}, которое определяет,'
+                  f' на какую из вершин будет совершён переход. Для этого рассчитанные вероятности'
+                  f' складываются в накопительную сумму.\n')
             for next_place, ph in zip(possible_places, pheromones):
                 total += ph
+                print(f'P_{next_place + 1} = {total:.3f}', end='')
                 if probability <= total:
+                    print(f' >= r = {probability:.3f}')
+                    print(f'\nПроисходит переход на вершину {next_place + 1}.', end=' ')
                     self.path.append(next_place)
                     break
+                else:
+                    print(f' < r = {probability:.3f}')
         
         self.path.append(self.path[0])
+        print(f'Затем муравей возвращается на начальную вершину, и его путь завершается. '
+              f'Таким образом, путь {order[start_position]} муравья выглядит следующим образом: {self.print_verbose()}. '
+              f'Длина пути равна: {self.print_length()}.')
 
     @property
     def length(self) -> float:
@@ -122,20 +142,32 @@ class Ant:
 class AntColony:
     def __init__(self, ant_count: int = 10):
         self.ants = [Path() for _ in range(ant_count)]
-        self.vapor_rate = 0.95
-        self.alpha = 6
-        self.beta = 7
+        self.vapor_rate = 0.5
+        self.alpha = 1
+        self.beta = 2
 
-    def solution_step(self):
+    def solution_step(self, num_iter: int = 0):
         for i, ant in enumerate(self.ants):
             ant.create_new_path(self.alpha, self.beta, i)
             # print(ant.print_verbose())
         
+        if num_iter == 0:
+            print('Затем выполняется испарение феромона по Формуле 1.1.2:\n')
+        else:
+            print('Затем выполняется испарение феромона по Формуле 1.1.2 аналогично предыдущей итерации.')
         for i in range(len(Path.graph)):
             for j in range(len(Path.graph)):
                 if i != j:
-                    Path.graph[i][j].pheromone *= (1 - self.vapor_rate)
-
+                    if num_iter == 0:
+                        print(f'\\tau_{i + 1}{j + 1} = (1 - {self.vapor_rate}) * {Path.graph[i][j].pheromone:.3f} = ', end='')
+                        Path.graph[i][j].pheromone *= (1 - self.vapor_rate)
+                        print(f'{Path.graph[i][j].pheromone:.3f}')
+                    else:
+                        Path.graph[i][j].pheromone *= (1 - self.vapor_rate)
+        print()
+        
+        print('Изменение концентрации феромона происходит по Формуле 1.1.3, где значение Q принято за 100.'
+              ' Далее отображены только значения феромонов, которые после данной итерации изменились на ненулевую величину.\n')
         delta_pheromones = [[0 for _ in range(len(Path.graph))] for _ in range(len(Path.graph))]
         for ant in self.ants:
             delta_pheromone = 100 / ant.length
@@ -144,7 +176,11 @@ class AntColony:
 
         for i in range(len(Path.graph)):
             for j in range(len(Path.graph)):
-                Path.graph[i][j].pheromone += delta_pheromones[i][j]
+                if delta_pheromones[i][j] != 0:
+                    print(f'\\tau_{i + 1}{j + 1} = {Path.graph[i][j].pheromone:.3f} + {delta_pheromones[i][j]:.3f} = ', end='')
+                    Path.graph[i][j].pheromone += delta_pheromones[i][j]
+                    print(f'{Path.graph[i][j].pheromone:.3f}')
+        print()
 
 
         best_path = self.ants[0]
@@ -164,11 +200,11 @@ class Solution:
         self.best_path: Path | None = None
 
     def create_graph(self):
-        df = pd.read_csv('../prac2/data.csv')
+        df = pd.read_csv('../prac2/backup_6.csv')
         x = df['x'].to_numpy()
         y = df['y'].to_numpy()
         self.graph = graph = [[GraphElement() for _ in range(len(df))] for _ in range(len(df))]
-        pheromone = 0.78498
+        pheromone = 0.876
         d = []
         for i in range(len(df)):
             for j in range(i, len(df)):
@@ -184,16 +220,16 @@ class Solution:
         Path(graph=graph, x=x, y=y)
 
     def solve(self):
-        ant_colony = AntColony(ant_count=len(Path.graph))
-        steps = 500
+        ant_colony = AntColony(ant_count=2)
+        steps = 2
         history = []
         for step in range(steps):
             print(f'Итерация {step + 1} / {steps}')
-            if (step + 1) % (steps // 5) == 0 or step == 0:
+            if (step + 1) % 1 == 0 or step == 0:
                 for ant in ant_colony.ants:
                     print(ant.print_verbose(start_at_zero=True))
                     print(ant.length)
-            current_path = ant_colony.solution_step()
+            current_path = ant_colony.solution_step(step)
             if self.best_path is None or current_path.length < self.best_path.length:
                 self.best_path = current_path
             history.append(self.best_path.length)
