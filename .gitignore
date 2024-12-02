@@ -2,3 +2,5 @@ stupid_script.py
 .venv
 .vscode
 __pycache__
+*.dat
+*.lprof

@@ -10,7 +10,7 @@ def generate(min_coord: int, max_coord: int, n_places: int):
 
 
 def main():
-    min_coord, max_coord, n = -100, 100, 10
+    min_coord, max_coord, n = -100, 100, 7
     x, y = generate(min_coord, max_coord, n)
     df = pd.DataFrame({'x': x, 'y': y})
     df.to_csv('data.csv', index=False)
