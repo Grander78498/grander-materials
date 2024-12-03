@@ -63,8 +63,8 @@ int main()
         printf("Введите строку\n");
         for (int j = 0; j < m; j++) {
             if (read_number(&a[i][j]) != 0) {
-                for (int j = 0; j < i; j++) {
-                    free(a[j]);
+                for (int k = 0; k < i; k++) {
+                    free(a[k]);
                 }
                 free(a);
                 return 1;
