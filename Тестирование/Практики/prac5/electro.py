@@ -7,9 +7,6 @@ from typing import Tuple
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.typing import NDArray
-from memory_profiler import profile as mem_profile
-from line_profiler import profile as line_profile
-from time import sleep
 
 
 def rastrigin(x: NDArray[np.float32]) -> float:
@@ -33,20 +30,12 @@ class EMA:
         self._max = -self._min
         self.x: NDArray[np.float32]
         self.values = None
-        self.s = None
 
-    @mem_profile
     def calculate_best(
             self) -> Tuple[NDArray[np.float32], float, NDArray[np.float32]]:
         '''
         Расчёт лучшего решения на итерации
         '''
-        if self.s is None:
-            self.s = [elem for elem in self.x for _ in range(2)]
-        else:
-            self.s = [elem for elem in self.s for _ in range(2)]
-        for i in range(len(self.s)):
-            self.s.extend([1, 1, 1])
         values = np.array([rastrigin(x) for x in self.x])
         best_value = float(np.min(values))
         best_x = self.x[np.where(abs(values - best_value) < 1e-3)].flatten()
@@ -112,6 +101,7 @@ class EMA:
         values, best_value, _ = self.calculate_best()
         for i in range(self.population_size):
             if abs(values[i] - best_value) > 1e-3:
+                alpha = 1
                 alpha = np.random.uniform()
                 velocity = np.ones_like(self.x[i])
                 normalized_force = force[i] / np.linalg.norm(force[i])
@@ -122,7 +112,6 @@ class EMA:
                         velocity[j] = self.x[i][j] - self._min
                 self.x[i] += alpha * np.multiply(normalized_force, velocity)
 
-    @line_profile
     def solve(self) -> None:
         '''
         Запуск алгоритма
