@@ -6,9 +6,6 @@ import time
 from math import sqrt
 
 
-max_weight = 6
-
-
 class GraphElement:
     def __init__(self, distance: float | None = None, pheromone: float = 0):
         self.distance = distance
@@ -164,7 +161,7 @@ class Solution:
         self.best_path: Path | None = None
 
     def create_graph(self):
-        df = pd.read_csv('../prac2/data.csv')
+        df = pd.read_csv(self.file_path)
         x = df['x'].to_numpy()
         y = df['y'].to_numpy()
         self.graph = graph = [[GraphElement() for _ in range(len(df))] for _ in range(len(df))]
@@ -185,8 +182,9 @@ class Solution:
 
     def solve(self):
         ant_colony = AntColony(ant_count=len(Path.graph))
-        steps = 500
+        steps = 40
         history = []
+        mean_history = []
         for step in range(steps):
             print(f'Итерация {step + 1} / {steps}')
             if (step + 1) % (steps // 5) == 0 or step == 0:
@@ -194,6 +192,11 @@ class Solution:
                     print(ant.print_verbose(start_at_zero=True))
                     print(ant.length)
             current_path = ant_colony.solution_step()
+            mean = 0
+            for ant in ant_colony.ants:
+                mean += ant.length
+            mean /= len(ant_colony.ants)
+            mean_history.append(mean)
             if self.best_path is None or current_path.length < self.best_path.length:
                 self.best_path = current_path
             history.append(self.best_path.length)
@@ -201,18 +204,17 @@ class Solution:
             print(f'Длина лучшего пути: {self.best_path.length}')
             print('\n\n\n')
         fig, ax = plt.subplots()
-        ax.set_title(f'Длина лучшего пути: {self.best_path.length}')
-        plt.plot(history)
+        ax.set_title(f'Длина лучшего пути: {self.best_path.length:.2f}')
+        plt.plot(history, label='Длина лучшего пути')
+        plt.plot(mean_history, label='Средняя длина пути среди муравьёв')
+        plt.legend(loc='upper right')
         plt.show()
         self.best_path.draw_path()
-
-        # for i in range(len(Path.graph)):
-        #     print(" || ".join(f"{Path.graph[i][j].pheromone}" for j in range(len(Path.graph))))
         
 
 
 def main():
-    solution = Solution('data.csv')
+    solution = Solution('../prac2/backup_10.csv')
     solution.create_graph()
     solution.solve()
 

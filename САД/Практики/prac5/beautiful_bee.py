@@ -88,8 +88,8 @@ class BeeColony:
         plt.show()
 
 if __name__ == '__main__':
-    bee_colony = BeeColony(search_size=1, max_distance=100, max_iter=30,
-                           bee_count=1000)
+    bee_colony = BeeColony(search_size=1, max_distance=1, max_iter=30,
+                           bee_count=100)
     bee_colony.init_population()
     bee_colony.create_fields()
     for i in range(len(bee_colony.fields)):

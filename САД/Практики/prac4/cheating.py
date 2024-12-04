@@ -6,9 +6,6 @@ import time
 from math import sqrt
 
 
-max_weight = 6
-
-
 class GraphElement:
     def __init__(self, distance: float | None = None, pheromone: float = 0):
         self.distance = distance

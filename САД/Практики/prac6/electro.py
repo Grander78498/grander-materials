@@ -85,7 +85,7 @@ class EMA:
 
 
 def main():
-    ema = EMA(4)
+    ema = EMA(2)
     ema.solve()
 
 
