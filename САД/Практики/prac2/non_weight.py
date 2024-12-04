@@ -108,7 +108,7 @@ class Solution:
         self.best_path: Path | None = None
 
     def create_graph(self):
-        df = pd.read_csv('data.csv')
+        df = pd.read_csv(self.file_path)
         # df = pd.concat([pd.DataFrame([[0, 0, 0]], columns=df.columns), df],
         #                ignore_index=True)
         x = df['x'].to_numpy()
@@ -154,7 +154,7 @@ class Solution:
                 print(f'H = {prob_lim}; p = {probability}')
                 if probability < prob_lim:
                     self.best_path = self.current_path
-            temperature *= 0.99
+            temperature *= 0.9
             print('===============\n')
             history.append(self.best_path.length)
             
@@ -167,7 +167,7 @@ class Solution:
 
 
 def main():
-    solution = Solution('data.csv')
+    solution = Solution('backup_10.csv')
     solution.create_graph()
     solution.solve()
 
