@@ -233,3 +233,14 @@ INSERT INTO song (name, duration, album_id) VALUES
     ('test', '00:02:00', 1),
     ('test', '00:02:00', 1),
     ('test', '00:02:00', 1);
+
+
+SELECT m.name, m.birth_date FROM musician AS m
+    JOIN group_musician AS mg ON mg.musician_id = m.id 
+    JOIN (SELECT COUNT(a.id), g.id FROM music_group AS g 
+          JOIN performer AS p ON p.group_id = g.id 
+          JOIN album_performer AS pa ON pa.performer_id = p.id 
+          JOIN album AS a ON a.id = pa.album_id 
+          WHERE a.release_date BETWEEN DATE('1970.01.01') AND DATE('1999.12.31')
+          GROUP BY g.id HAVING COUNT(a.id) >= 2)
+    AS r ON r.id = mg.group_id;
