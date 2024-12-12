@@ -34,7 +34,8 @@ class BeeColony:
         self.values = rastrigin(self.bees)
 
         for i in range(len(self.bees)):
-            print(f"X_{i} = ({self.bees[i][0]:.3f}, {self.bees[i][1]:.3f}); f(X_{i}) = {self.values[i]:.3f}")
+            print(f"X_{i + 1} = ({self.bees[i][0]:.3f}, {self.bees[i][1]:.3f}); f(X_{i}) = {self.values[i]:.3f}")
+        print()
 
     def create_fields(self):
         self.fields = []
@@ -48,17 +49,17 @@ class BeeColony:
                        or rastrigin(bee) < rastrigin(best_bee):
                         best_bee = bee
                         min_index = i
-            print(f"Среди оставшихся точек лучшее значение имеется у пчелы X_{min_index}: значение функции у неё равно {rastrigin(best_bee):.3f}.")
+            print(f"Среди оставшихся точек лучшее значение имеется у пчелы X_{min_index + 1}: значение функции у неё равно {rastrigin(best_bee):.3f}.")
             if len(visited) + 1 == self.bee_count:
-                print(f'Поскольку точек больше не осталось, то точка X_{min_index} образует область сама с собой.')
+                print(f'Поскольку точек больше не осталось, то точка X_{min_index + 1} образует область сама с собой.')
             else:
-                print(f"Далее рассчитывается Евклидово расстояние между точкой X_{min_index} и оставшимися точками по Формуле 1.1.2.")
+                print(f"Далее рассчитывается Евклидово расстояние между точкой X_{min_index + 1} и оставшимися точками по Формуле 1.1.2.")
             print()
             current_field = []
             current_field.append(min_index)
             for i, bee in enumerate(self.bees):
                 if i not in visited and i != min_index:
-                    print(f"d_{min_index}{i} = \sqrt("
+                    print(f"d_({min_index + 1} {i + 1}) = \\sqrt("
                           f"({best_bee[0]:.3f} {'-' if bee[0] > 0 else '+'} {abs(bee[0]):.3f})^2 +"
                           f" ({best_bee[1]:.3f} {'-' if bee[1] > 0 else '+'} {abs(bee[1]):.3f})^2) = "
                           f"{np.linalg.norm(bee - best_bee):.3f}", end='')
@@ -70,21 +71,21 @@ class BeeColony:
                     print(f"{self.max_distance}")
             print()
             if len(current_field) > 2:
-                print(f'Следовательно, в область точки X_{min_index} вошли точки'
-                      f' {", ".join("X_" + str(elem) for elem in current_field[1:])}')
+                print(f'Следовательно, в область точки X_{min_index + 1} вошли точки'
+                      f' {", ".join("X_" + str(elem + 1) for elem in current_field[1:])}')
             elif len(current_field) == 2:
-                print(f'Следовательно, в область точки X_{min_index} вошла точка'
-                      f' {", ".join("X_" + str(elem) for elem in current_field[1:])}')
+                print(f'Следовательно, в область точки X_{min_index + 1} вошла точка'
+                      f' {", ".join("X_" + str(elem + 1) for elem in current_field[1:])}')
             elif len(visited) + 1 != self.bee_count:
-                print(f'Следовательно, точка X_{min_index} образует область сама с собой.')
+                print(f'Следовательно, точка X_{min_index + 1} образует область сама с собой.')
             self.fields.append(current_field)
             visited.extend(current_field)
 
     def find_field_best(self, k: int):
         print(f'Рассмотрим поиск в первой подобласти.'
-              f' Лучшая точка: ({self.bees[self.fields[k][0]][0]:.3f}, {self.bees[self.fields[k][0]][0]:.3f}) '
+              f' Лучшая точка: ({self.bees[self.fields[k][0]][0]:.3f}, {self.bees[self.fields[k][0]][1]:.3f}) '
               f'со значением функции {rastrigin(self.bees[self.fields[k][0]]):.3f}.')
-        print('Новые сгенерированные точки имеют следующие координаты:\n')
+        print(f'Новые сгенерированные точки имеют следующие координаты (точка X_{self.bee_count} является текущим центром области):\n')
         cnt = 0
         new_best_bee = None
         while cnt < self.max_iter:
@@ -97,12 +98,20 @@ class BeeColony:
             new_bees = (max_search - min_search) * np.random.random(size=(self.bee_count - 1, self.n)) + min_search
             new_bees = np.vstack([new_bees, current_best_bee])
             values = rastrigin(new_bees)
-            new_best_bee = new_bees[np.where(np.abs(np.min(values) - values) < 1e-10)]
+            for i in range(len(new_bees)):
+                print(f"X_{i + 1} = ({new_bees[i][0]:.3f}, {new_bees[i][1]:.3f}); f(X_{i}) = {values[i]:.3f}")
+            print()
+            min_index = np.where(np.abs(np.min(values) - values) < 1e-10)[0][0]
+            new_best_bee = new_bees[np.where(np.abs(np.min(values) - values) < 1e-10)[0]]
+            print(f'Минимальное значение среди достигнуто точкой X_{min_index + 1}'
+                  f' (значение функции равно {rastrigin(new_best_bee)[0]:.3f}).'
+                  f' Следовательно, эта точка становится центром области, и происходит переход к новой итерации.')
 
             if np.linalg.norm(current_best_bee - new_best_bee) < 1e-5:
                 cnt += 1
             else:
                 cnt = 0
+            exit(0)
         print(new_best_bee, rastrigin(new_best_bee))
 
 

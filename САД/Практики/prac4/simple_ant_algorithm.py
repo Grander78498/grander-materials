@@ -166,22 +166,15 @@ class Solution:
         y = df['y'].to_numpy()
         self.graph = graph = [[GraphElement() for _ in range(len(df))] for _ in range(len(df))]
         pheromone = 0.78498
-        d = []
         for i in range(len(df)):
             for j in range(i, len(df)):
                 graph[i][j].distance = graph[j][i].distance = sqrt((x[i] - x[j])**2 + (y[i] - y[j])**2)
-                if i < j:
-                    sign_1 = '-' if x[j] >= 0 else '+'
-                    sign_2 = '-' if y[j] >= 0 else '+'
-                    print(f'\sqrt (({x[i]} {sign_1} {abs(x[j])})^2 + ({y[i]} {sign_2} {abs(y[j])})^2) = {round(graph[i][j].distance, 2)}')
-                    d.append(round(graph[i][j].distance, 2))
                 if i != j:
                     graph[i][j].pheromone = graph[j][i].pheromone = pheromone
-        print('\n'.join(map(str, d)))
         Path(graph=graph, x=x, y=y)
 
     def solve(self):
-        ant_colony = AntColony(ant_count=len(Path.graph))
+        ant_colony = AntColony(ant_count=6)
         steps = 40
         history = []
         mean_history = []

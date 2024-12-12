@@ -77,6 +77,7 @@ class EMA:
             print(f'Текущее лучшее значение: {round(self.best_value, 4)} в точке {list(map(lambda x: round(x, 4), self.best_x))}')
             print(f'Итерация: {i + 1}')
             self.local_search()
+            self.calculate_best()
             self.calculate_force()
             self.move_particles()
         plt.plot(history)

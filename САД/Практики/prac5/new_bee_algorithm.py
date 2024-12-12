@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 def rastrigin(x: np.ndarray):
@@ -19,15 +18,6 @@ class BeeColony:
         self.n = n
         self._max = 5.12
         self._min = -self._max
-
-    def draw_bees(self, bees):
-        bee_x = [bee[0] for bee in bees]
-        bee_y = [bee[1] for bee in bees]
-        ax = plt.gca()
-        for i in range(len(self.bees)):
-            ax.annotate(str(i), (bees[i][0], bees[i][1]))
-        plt.scatter(bee_x, bee_y, s=10)
-        plt.show()
 
     def init_population(self):
         self.bees = (self._max - self._min) * np.random.random(size=(self.bee_count, self.n)) + self._min
@@ -53,12 +43,12 @@ class BeeColony:
                         current_field.append(i)
             self.fields.append(current_field)
             visited.extend(current_field)
+        print(f'Количество областей: {len(self.fields)}')
 
     def find_field_best(self, k: int):
         cnt = 0
         new_best_bee = None
         while cnt < self.max_iter:
-            field = self.fields[k]
             if new_best_bee is None:
                 current_best_bee = self.bees[self.fields[k][0]]
             else:
@@ -68,19 +58,20 @@ class BeeColony:
             new_bees = (max_search - min_search) * np.random.random(size=(self.bee_count - 1, self.n)) + min_search
             new_bees = np.vstack([new_bees, current_best_bee])
             values = rastrigin(new_bees)
-            new_best_bee = new_bees[np.where(np.abs(np.min(values) - values) < 1e-10)]
+            new_best_bee = new_bees[np.where(np.abs(np.min(values) - values) < 1e-10)][0]
 
             if np.linalg.norm(current_best_bee - new_best_bee) < 1e-5:
                 cnt += 1
             else:
                 cnt = 0
-        print(new_best_bee, rastrigin(new_best_bee))
+        print(f'Найденное значение в {k + 1}-й области: {rastrigin(new_best_bee):.3f}'
+              f' в точке ({", ".join(map(lambda x: str(round(x, 3)), new_best_bee))})')
 
 
 
 if __name__ == '__main__':
-    bee_colony = BeeColony(search_size=1, max_distance=4, max_iter=100,
-                           bee_count=100)
+    bee_colony = BeeColony(search_size=1, max_distance=2, max_iter=50,
+                           bee_count=1000)
     bee_colony.init_population()
     bee_colony.create_fields()
     for i in range(len(bee_colony.fields)):
