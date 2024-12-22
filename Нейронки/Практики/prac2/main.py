@@ -33,7 +33,6 @@ class StupidNeuralNetwork:
                 result = (result > 0).astype(np.int8)
 
                 loss = target_value - result
-                print(row.shape, loss.shape)
                 self.weights += self.lr * (row.T @ loss)
                 self.b += self.lr * loss.mean(axis=0)
             epoch_result = self.dataset @ self.weights + self.b
