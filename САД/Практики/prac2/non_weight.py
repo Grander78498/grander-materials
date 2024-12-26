@@ -117,16 +117,21 @@ class Solution:
         for i in range(len(df)):
             for j in range(len(df)):
                 graph[i][j] = np.sqrt((x[i] - x[j])**2 + (y[i] - y[j])**2)
-                # if i < j:
-                #     sign_1 = '-' if x[j] >= 0 else '+'
-                #     sign_2 = '-' if y[j] >= 0 else '+'
-                #     print(f'\sqrt (({x[i]} {sign_1} {abs(x[j])})^2 + ({y[i]} {sign_2} {abs(y[j])})^2) = {round(graph[i][j], 2)}')
+                if i < j:
+                    sign_1 = '-' if x[j] >= 0 else '+'
+                    sign_2 = '-' if y[j] >= 0 else '+'
+                    print(f'sqrt(({x[i]} {sign_1} {abs(x[j])})^2 + ({y[i]} {sign_2} {abs(y[j])})^2) = {round(graph[i][j], 2)} \\')
+
+        for i in range(len(df)):
+            for j in range(len(df)):
+                if i < j:
+                    print(f'[{i} #math.arrow {j}], [{graph[i][j]: .2f}],')
 
         self.current_path = Path(graph=graph, x=x, y=y)
         self.current_path.create_new_path()
 
     def solve(self):
-        temperature = 100000
+        temperature = 1000
         history = []
         self.best_path = self.current_path
         history.append(self.best_path.length)
@@ -134,7 +139,7 @@ class Solution:
         print(f'Длина начального пути: {self.best_path.print_length()} = {self.best_path.length:.2f} (м)')
         print('============\n')
         i = 0
-        while temperature > 1e-20:
+        while temperature > 1:
             i += 1
             print(f'Температура: {temperature}')
             print('=============')
@@ -167,7 +172,7 @@ class Solution:
 
 
 def main():
-    solution = Solution('backup_10.csv')
+    solution = Solution('backup_6.csv')
     solution.create_graph()
     solution.solve()
 
